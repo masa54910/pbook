@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-
+import CalendarModal from "../components/CalendarModal";
+import { FixedMediaShelf, MediaPreview } from "../components/MediaRenderer";
+import Sidebar from "../components/Sidebar";
+import ReplyTree from "../components/ReplyTree";
+import MemoCard from "../components/MemoCard";
 const STORAGE_KEY = "pbook-memos-v4";
 
 const TYPE_STYLE = {
@@ -616,67 +620,17 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#f4f2ef] flex text-[#1f2933]">
-      <aside className="sticky top-0 h-screen overflow-y-auto w-[270px] bg-white/55 backdrop-blur-xl border-r border-white/60 shadow-[8px_0_40px_rgba(0,0,0,.04)] p-6 flex flex-col">
-        <div className="mb-10 flex justify-center">
-          <img src="/pbook-logo.png" alt="P Book" className="w-[190px] h-auto object-contain" />
-        </div>
-
-        <div className="mb-4">
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="検索 / #タグ"
-            className="w-full rounded-2xl px-4 py-3 bg-white/80 shadow-sm outline-none border border-white/80 text-sm"
-          />
-        </div>
-
-        <div className="mb-7">
-          <p className="text-xs text-gray-400 mb-2">#タグ候補</p>
-          <div className="flex flex-wrap gap-2">
-            {allTags.length === 0 ? (
-              <span className="text-xs text-gray-400">タグはまだありません</span>
-            ) : (
-              allTags.slice(0, 4).map(({ tag, count }) => (
-                <button
-                  key={tag}
-                  onClick={() => setSearch(`#${tag}`)}
-                  className="rounded-full bg-gradient-to-r from-white to-gray-100 border border-white/80 shadow-sm px-3 py-1 text-xs text-gray-600 hover:shadow-md transition"
-                >
-                  #{tag} <span className="text-gray-400">{count}</span>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-3 mb-8">
-          {NAV_ITEMS.map((item) => {
-            const typeStyle = TYPE_STYLE[item.key];
-            const isType = Boolean(typeStyle);
-            return (
-              <button
-                key={item.key}
-                onClick={() => (isType ? openCreate(item.key) : item.key === "ブックマーク" ? setSearch("bookmarked") : null)}
-                className={`w-full text-left px-5 py-4 rounded-2xl transition flex items-center gap-3 ${
-                  item.key === "ホーム"
-                    ? "bg-pink-50 text-pink-600 font-bold shadow-sm"
-                    : isType
-                    ? `bg-gradient-to-r ${typeStyle.soft} ${typeStyle.text} hover:shadow-md`
-                    : "hover:bg-white/80 text-gray-700"
-                }`}
-              >
-                <span className="w-7 flex justify-center"><Icon name={item.icon} className="w-5 h-5" /></span>
-                <span>{item.key}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-auto bg-white/70 rounded-3xl p-5 shadow-sm">
-          <p className="text-xs text-gray-400 mb-2">今日のメモ</p>
-          <p className="text-3xl font-bold">{getMemoCount(selectedDate)}</p>
-        </div>
-      </aside>
+      <Sidebar
+  search={search}
+  setSearch={setSearch}
+  allTags={allTags}
+  navItems={NAV_ITEMS}
+  typeStyle={TYPE_STYLE}
+  Icon={Icon}
+  openCreate={openCreate}
+  getMemoCount={getMemoCount}
+  selectedDate={selectedDate}
+/>
 
       <section className="flex-1 p-10">
         <div className="flex justify-between items-center mb-6">
@@ -727,6 +681,8 @@ export default function Home() {
               <MemoCard
                 key={memo.id}
                 memo={memo}
+                typeStyle={TYPE_STYLE}
+                Icon={Icon}
                 onEdit={openEdit}
                 onDelete={deleteMemo}
                 onUpdate={updateMemo}
@@ -740,62 +696,15 @@ export default function Home() {
         </div>
       </section>
 
-      {showCalendar && (
-        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-6">
-          <div className="w-full max-w-xl bg-white/95 rounded-[32px] shadow-2xl p-7 border border-white/80">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-r from-pink-400 to-purple-400 text-white flex items-center justify-center shadow-md">
-                  <Icon name="calendarAlt" className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 font-bold">メモカレンダー</p>
-                  <h3 className="text-2xl font-bold">{calendarInfo.year}年{calendarInfo.month}月</h3>
-                </div>
-              </div>
-              <button onClick={() => setShowCalendar(false)} className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold">×</button>
-            </div>
-
-            <div className="grid grid-cols-7 gap-2 mb-2 text-center text-xs font-bold text-gray-400">
-              {['日', '月', '火', '水', '木', '金', '土'].map((week) => (
-                <div key={week} className="py-2">{week}</div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-7 gap-2">
-              {calendarInfo.cells.map((cell) => {
-                if (cell.blank) return <div key={cell.key} className="h-14" />;
-                const count = getMemoCount(cell.date);
-                const isSelected = selectedDate === cell.date;
-                return (
-                  <button
-                    key={cell.key}
-                    onClick={() => {
-                      setSelectedDate(cell.date);
-                      setShowCalendar(false);
-                    }}
-                    className={`relative h-14 rounded-2xl font-bold transition ${
-                      isSelected
-                        ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-md"
-                        : "bg-gray-50 text-gray-700 hover:bg-pink-50"
-                    }`}
-                  >
-                    {cell.day}
-                    {count > 0 && (
-                      <span className={`absolute -top-1 -right-1 text-[11px] w-6 h-6 rounded-full flex items-center justify-center shadow-sm ${
-                        isSelected ? "bg-white text-pink-600" : "bg-blue-500 text-white"
-                      }`}>
-                        {count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
+     <CalendarModal
+  show={showCalendar}
+  close={() => setShowCalendar(false)}
+  calendarInfo={calendarInfo}
+  selectedDate={selectedDate}
+  getMemoCount={getMemoCount}
+  setSelectedDate={setSelectedDate}
+  Icon={Icon}
+/>
       {modalType && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-6">
           <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white/95 rounded-[32px] shadow-2xl p-8">
@@ -911,135 +820,8 @@ function plainMemoText(text) {
   return String(text || "").replace(/\[media:[^\]]+\]/g, "").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-function MemoCard({ memo, onEdit, onDelete, onUpdate, onReply, onEditReply, onDeleteReply, renderText }) {
-  const [noteExpanded, setNoteExpanded] = useState(false);
-  const style = TYPE_STYLE[memo.type] || TYPE_STYLE.つぶやき;
-  const isNote = memo.type === "ノート";
-  const plainText = plainMemoText(memo.text);
-  const shouldCollapseNote = isNote && plainText.length > 140 && !noteExpanded;
-  const notePreviewText = shouldCollapseNote ? `${plainText.slice(0, 140)}...` : plainText;
-  const bottomMedia = (memo.media || []).filter((m) => !String(memo.text || "").includes(`[media:${m.id}]`));
 
-  return (
-    <div className="relative bg-white/85 backdrop-blur-xl rounded-[28px] p-8 shadow-sm border border-white/70 overflow-hidden">
-      <div className={`absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b ${style.button}`} />
-      <div className="flex justify-between items-start mb-4">
-        <div className={`inline-block px-4 py-1 rounded-full text-white text-sm font-bold bg-gradient-to-r ${style.chip}`}>{memo.type}</div>
-        <div className="text-gray-400 text-sm">{displayMemoDateTime(memo)}</div>
-      </div>
-      {memo.pinned && <div className="text-blue-500 text-sm font-bold mb-3">📌 トップに固定</div>}
-      <h3
-        onClick={() => isNote && setNoteExpanded((prev) => !prev)}
-        className={`text-3xl font-bold mb-4 ${isNote ? "cursor-pointer hover:text-green-700 transition" : ""}`}
-      >
-        {memo.title}
-      </h3>
-      <div
-        onClick={() => isNote && setNoteExpanded((prev) => !prev)}
-        className={`text-gray-600 leading-relaxed mb-4 ${isNote ? "cursor-pointer" : ""}`}
-      >
-        {isNote ? (
-          shouldCollapseNote ? (
-            <span className="whitespace-pre-wrap">{notePreviewText}</span>
-          ) : (
-            renderText(memo)
-          )
-        ) : (
-          <span className="whitespace-pre-wrap">{memo.text}</span>
-        )}
-      </div>
-      {isNote && plainText.length > 140 && (
-        <button
-          onClick={() => setNoteExpanded((prev) => !prev)}
-          className="mb-4 rounded-full bg-gradient-to-r from-emerald-50 to-green-50 px-4 py-2 text-sm font-bold text-green-700 hover:shadow-sm transition"
-        >
-          {noteExpanded ? "閉じる" : "全文を表示"}
-        </button>
-      )}
-      {(!isNote || noteExpanded) && bottomMedia.length > 0 && <FixedMediaShelf media={bottomMedia} />}
-      <TagList tags={memo.tags} />
-      <ActionIcons
-        onEdit={() => onEdit(memo)}
-        onPin={() => onUpdate(memo.id, { pinned: !memo.pinned })}
-        onBookmark={() => onUpdate(memo.id, { bookmarked: !memo.bookmarked })}
-        onDelete={() => onDelete(memo.id)}
-        onReply={() => onReply({ type: "memo", memoId: memo.id })}
-        bookmarked={memo.bookmarked}
-        pinned={memo.pinned}
-      />
-      {(memo.replies || []).length > 0 && (
-        <div className="mt-6 border-l-2 border-gray-200 pl-5 space-y-4">
-          {memo.replies.map((reply) => (
-            <ReplyNode
-              key={reply.id}
-              reply={reply}
-              memoId={memo.id}
-              depth={0}
-              onReply={onReply}
-              onEditReply={onEditReply}
-              onDeleteReply={onDeleteReply}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
-function ReplyNode({ reply, memoId, depth, onReply, onEditReply, onDeleteReply }) {
-  return (
-    <div className="text-sm">
-      <div className="rounded-2xl bg-gray-50/80 p-4 border border-gray-100">
-        <div className="text-gray-400 mb-2">{reply.createdAt}</div>
-        <div className="text-gray-700 whitespace-pre-wrap leading-relaxed">{reply.text}</div>
-        <FixedMediaShelf media={reply.media || []} />
-        <TagList tags={reply.tags} small />
-        <div className="flex justify-end gap-3 mt-3 text-gray-400 text-base">
-          <button title="編集" onClick={() => onEditReply(reply, memoId)} className="hover:text-blue-500"><Icon name="edit" className="w-4 h-4" /></button>
-          <button title="削除" onClick={() => onDeleteReply(memoId, reply.id)} className="hover:text-red-500"><Icon name="trash" className="w-4 h-4" /></button>
-          <button title="返信" onClick={() => onReply({ type: "reply", memoId, replyId: reply.id })} className="hover:text-gray-700"><Icon name="reply" className="w-4 h-4" /></button>
-        </div>
-      </div>
-      {(reply.replies || []).length > 0 && (
-        <div className="mt-3 ml-5 border-l-2 border-gray-200 pl-4 space-y-3">
-          {reply.replies.map((child) => (
-            <ReplyNode
-              key={child.id}
-              reply={child}
-              memoId={memoId}
-              depth={depth + 1}
-              onReply={onReply}
-              onEditReply={onEditReply}
-              onDeleteReply={onDeleteReply}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ActionIcons({ onEdit, onPin, onBookmark, onDelete, onReply, bookmarked, pinned }) {
-  return (
-    <div className="flex justify-end items-center gap-4 mt-6 text-gray-400">
-      <button title="編集" onClick={onEdit} className="hover:text-blue-500 transition">
-        <Icon name="editBox" className="w-4.5 h-4.5" />
-      </button>
-      <button title="トップに固定" onClick={onPin} className={`${pinned ? "text-blue-500" : "hover:text-blue-500"} transition`}>
-        <Icon name="pin" className="w-4 h-4" filled={pinned} />
-      </button>
-      <button title="ブックマーク" onClick={onBookmark} className={`${bookmarked ? "text-yellow-500" : "hover:text-yellow-500"} transition`}>
-        <Icon name="bookmark" className="w-4 h-4" filled={bookmarked} />
-      </button>
-      <button title="削除" onClick={onDelete} className="hover:text-red-500 transition">
-        <Icon name="trash" className="w-4 h-4" />
-      </button>
-      <button title="返信" onClick={onReply} className="hover:text-gray-700 transition">
-        <Icon name="reply" className="w-4 h-4" />
-      </button>
-    </div>
-  );
-}
 
 function TagInput({ value, setValue, allTags }) {
   return (
@@ -1092,39 +874,3 @@ function MediaToolbar({ type, mediaSize, setMediaSize, onSelect, compact = false
   );
 }
 
-function FixedMediaShelf({ media, setMedia, editing = false, onWidthChange }) {
-  if (!media || media.length === 0) return null;
-  return (
-    <div className="mt-5 grid grid-cols-2 gap-4">
-      {media.map((m) => (
-        <div key={m.id} className="rounded-2xl bg-gray-50 border border-gray-100 p-3">
-          <MediaPreview media={m} editing={editing} onWidthChange={onWidthChange} />
-          {editing && setMedia && <button onClick={() => setMedia((prev) => prev.filter((x) => x.id !== m.id))} className="mt-2 text-xs text-red-500">削除</button>}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function MediaPreview({ media, editing = false, onWidthChange }) {
-  const width = media.width || 64;
-  const widthStyle = { width: `${width}%`, maxWidth: "100%" };
-  return (
-    <div className="my-3">
-      {media.kind === "image" && media.url && <img src={media.url} alt="添付画像" className="rounded-2xl object-cover" style={widthStyle} />}
-      {media.kind === "video" && media.url && <video src={media.url} controls className="rounded-2xl" style={widthStyle} />}
-      {media.kind === "file" && <div className="w-16 h-16 rounded-2xl bg-white border flex items-center justify-center text-2xl">📎</div>}
-      {!media.url && media.kind !== "file" && <div className="rounded-2xl bg-gray-100 text-gray-400 p-5 text-sm">画像・動画は再読み込み後は再添付が必要です</div>}
-      {editing && (media.kind === "image" || media.kind === "video") && (
-        <input
-          type="range"
-          min="30"
-          max="100"
-          value={width}
-          onChange={(e) => onWidthChange?.(media.id, Number(e.target.value))}
-          className="mt-3 w-full"
-        />
-      )}
-    </div>
-  );
-}
