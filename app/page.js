@@ -345,7 +345,8 @@ export default function Home() {
 const [selectedModeId, setSelectedModeId] = useState("work");
 const [showModeModal, setShowModeModal] = useState(false);
 const [newModeName, setNewModeName] = useState("");
-
+const [editingModeId, setEditingModeId] = useState(null);
+const [editingModeName, setEditingModeName] = useState("");
   const [replyTarget, setReplyTarget] = useState(null);
   const [editingReply, setEditingReply] = useState(null);
   const [replyText, setReplyText] = useState("");
@@ -455,6 +456,29 @@ function handleAddMode() {
   setHomeModes((prev) => [...prev, newMode]);
   setSelectedModeId(newMode.id);
   setNewModeName("");
+}
+
+function startEditMode(mode) {
+  setEditingModeId(mode.id);
+  setEditingModeName(mode.name);
+}
+
+function saveModeName() {
+  const clean = editingModeName.trim();
+
+  if (!clean) {
+    alert("名前を入力してください");
+    return;
+  }
+
+  setHomeModes((prev) =>
+    prev.map((mode) =>
+      mode.id === editingModeId ? { ...mode, name: clean } : mode
+    )
+  );
+
+  setEditingModeId(null);
+  setEditingModeName("");
 }
 
   function openCreate(type) {
@@ -763,7 +787,7 @@ function handleAddMode() {
 
       <div className="space-y-3 mb-5">
         {homeModes.map((mode) => (
-          <button
+          <div
             key={mode.id}
             onClick={() => {
               setSelectedModeId(mode.id);
@@ -775,9 +799,41 @@ function handleAddMode() {
                 : "bg-gray-100 hover:bg-gray-200 text-gray-700"
             }`}
           >
-            <span>{mode.name}</span>
-            <span className="text-sm opacity-80">編集</span>
-          </button>
+            {editingModeId === mode.id ? (
+  <div className="flex gap-2 w-full">
+    <input
+  value={editingModeName}
+  onClick={(e) => e.stopPropagation()}
+  onChange={(e) => setEditingModeName(e.target.value)}
+  className="flex-1 rounded-xl px-3 py-2 text-black"
+/>
+
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        saveModeName();
+      }}
+      className="text-sm px-3 py-2 rounded-xl bg-white/20"
+    >
+      保存
+    </button>
+  </div>
+) : (
+  <>
+    <span>{mode.name}</span>
+
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        startEditMode(mode);
+      }}
+      className="text-sm opacity-80 hover:opacity-100"
+    >
+      編集
+    </button>
+  </>
+)}
+          </div>
         ))}
       </div>
 
