@@ -1188,12 +1188,39 @@ function permanentDeleteMemo(id) {
                 </div>
               </div>
             ) : (
-              <textarea
-                value={formText}
-                onChange={(e) => setFormText(e.target.value)}
-                placeholder="ホワイトボードのメモ内容"
-                className="w-full min-h-[180px] rounded-2xl border border-gray-200 px-5 py-4 outline-none resize-y"
-              />
+              <div className="rounded-[28px] border border-gray-200 bg-white p-6 shadow-inner">
+  <div className="mb-4 flex items-center justify-between">
+    <p className="text-sm font-bold text-gray-500">
+      ホワイトボード
+    </p>
+    <span className="text-xs text-gray-400">
+      自由メモ・構想整理用
+    </span>
+  </div>
+
+  <textarea
+    value={formText}
+    onChange={(e) => setFormText(e.target.value)}
+    placeholder="ここにアイデア、構成、図の説明、ラフ案などを自由に書く。"
+    className="w-full min-h-[360px] rounded-2xl border border-dashed border-gray-300 bg-gray-50/70 px-6 py-5 outline-none resize-y leading-relaxed text-gray-800"
+  />
+
+  <div className="mt-4">
+    <MediaToolbar
+      type={modalType}
+      mediaSize={mediaSize}
+      setMediaSize={setMediaSize}
+      onSelect={handleMediaSelect}
+    />
+
+    <FixedMediaShelf
+      media={formMedia}
+      setMedia={setFormMedia}
+      editing
+      onWidthChange={changeMediaWidth}
+    />
+  </div>
+</div>
             )}
 
             <TagInput value={formTags} setValue={setFormTags} allTags={allTags} />

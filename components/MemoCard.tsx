@@ -131,7 +131,13 @@ export default function MemoCard({
   );
 
   return (
-    <div className="relative bg-white/85 backdrop-blur-xl rounded-[28px] p-8 shadow-sm border border-white/70 overflow-hidden">
+    <div
+  className={`relative bg-white/85 backdrop-blur-xl rounded-[28px] p-8 shadow-sm border border-white/70 ${
+    memo.type === "ホワイトボード"
+      ? "min-h-[520px] bg-white"
+      : ""
+  }`}
+>
       <div
         className={`absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b ${style.button}`}
       />
