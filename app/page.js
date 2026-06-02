@@ -367,8 +367,9 @@ const [modeImageInput, setModeImageInput] = useState("");
   const [mediaSize, setMediaSize] = useState("medium");
   const [drawColor, setDrawColor] = useState("#111827");
   const [drawWidth, setDrawWidth] = useState(4);
+  const [eraserWidth, setEraserWidth] = useState(24);
   const [isEraser, setIsEraser] = useState(false);
-const canvasHistoryRef = useRef([]);
+  const canvasHistoryRef = useRef([]);
   const canvasRef = useRef(null);
   const isDrawingRef = useRef(false);
   const noteTextRef = useRef(null);
@@ -921,8 +922,8 @@ function draw(e) {
   const point = getCanvasPoint(e);
   if (!point) return;
 
-  ctx.lineWidth = drawWidth;
   ctx.strokeStyle = isEraser ? "#ffffff" : drawColor;
+ctx.lineWidth = isEraser ? eraserWidth : drawWidth;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
@@ -1398,6 +1399,24 @@ function renderTextWithInlineMedia(memo, editing = false) {
 >
   🧽 消しゴム
 </button>
+{isEraser && (
+  <>
+    <label className="text-sm font-bold text-gray-500">
+      消し幅
+    </label>
+
+    <select
+      value={eraserWidth}
+      onChange={(e) => setEraserWidth(Number(e.target.value))}
+      className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
+    >
+      <option value={12}>細い</option>
+      <option value={24}>普通</option>
+      <option value={40}>太い</option>
+      <option value={64}>極太</option>
+    </select>
+  </>
+)}
     <button
       type="button"
       onClick={clearCanvas}
