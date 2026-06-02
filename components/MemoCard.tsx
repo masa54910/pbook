@@ -99,10 +99,13 @@ function ActionIcons({
 
 export default function MemoCard({
   memo,
+ typeFilter,
   typeStyle,
   Icon,
   onEdit,
   onDelete,
+  onRestore,
+  onPermanentDelete,
   onUpdate,
   onReply,
   onEditReply,
@@ -226,6 +229,27 @@ export default function MemoCard({
         pinned={memo.pinned}
         Icon={Icon}
       />
+
+      {typeFilter === "ゴミ箱" && (
+  <div className="mt-4 flex justify-end gap-2">
+    <button
+      type="button"
+      onClick={() => onRestore(memo.id)}
+      title="元に戻す"
+      className="rounded-full bg-green-50 px-3 py-2 text-sm font-bold text-green-600 hover:bg-green-100"
+    >
+      ↩ 元に戻す
+    </button>
+
+    <button
+      type="button"
+      onClick={() => onPermanentDelete(memo.id)}
+      className="rounded-full bg-red-50 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-100"
+    >
+      このメモを削除する
+    </button>
+  </div>
+)}
 
       <ReplyTree
         replies={memo.replies}

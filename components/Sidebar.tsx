@@ -54,12 +54,16 @@ setTypeFilter,
 }
 }}
               className={`w-full text-left px-5 py-4 rounded-2xl transition flex items-center gap-3 ${
-                item.key === "ホーム"
-                  ? "bg-pink-50 text-pink-600 font-bold shadow-sm"
-                  : isType
-                  ? `bg-gradient-to-r ${itemStyle.soft} ${itemStyle.text} hover:shadow-md`
-                  : "hover:bg-white/80 text-gray-700"
-              }`}
+  typeFilter === item.key && item.key === "ゴミ箱"
+    ? "bg-red-50 text-red-600 font-bold shadow-sm"
+    : typeFilter === item.key && item.key === "ブックマーク"
+    ? "bg-yellow-50 text-yellow-700 font-bold shadow-sm"
+    : typeFilter === item.key && item.key === "ホーム"
+    ? "bg-pink-50 text-pink-600 font-bold shadow-sm"
+    : typeFilter === item.key && isType
+    ? `bg-gradient-to-r ${itemStyle.soft} ${itemStyle.text} font-bold hover:shadow-md`
+    : "hover:bg-white/80 text-gray-700"
+}`}
             >
               <span className="w-7 flex justify-center">
                 <Icon

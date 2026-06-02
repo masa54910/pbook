@@ -719,7 +719,21 @@ function handleModeImageFile(e) {
     )
   );
 }
+function restoreMemo(id) {
+  setMemos((prev) =>
+    prev.map((memo) =>
+      memo.id === id
+        ? { ...memo, deleted: false }
+        : memo
+    )
+  );
+}
 
+function permanentDeleteMemo(id) {
+  if (!confirm("このメモを完全に削除しますか？この操作は元に戻せません。")) return;
+
+  setMemos((prev) => prev.filter((memo) => memo.id !== id));
+}
   function updateMemo(id, patch) {
     setMemos((prev) => prev.map((memo) => (memo.id === id ? { ...memo, ...patch } : memo)));
   }
@@ -881,6 +895,31 @@ function handleModeImageFile(e) {
           })}
         </div>
 
+{typeFilter === "ゴミ箱" && (
+  <div className="mb-6 rounded-[24px] border border-red-100 bg-red-50/80 p-5 shadow-sm">
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <h3 className="text-lg font-bold text-red-700">ゴミ箱</h3>
+        <p className="mt-1 text-sm text-red-500">
+          削除済みのメモを表示しています。
+        </p>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => {
+          if (!confirm("ゴミ箱内のメモをすべて完全に削除しますか？この操作は元に戻せません。")) return;
+
+          setMemos((prev) => prev.filter((memo) => memo.deleted !== true));
+        }}
+        className="rounded-full bg-red-600 px-5 py-2 text-sm font-bold text-white shadow-sm hover:bg-red-700"
+      >
+        ゴミ箱を空にする
+      </button>
+    </div>
+  </div>
+)}
+
         <div className="space-y-6">
           {visibleMemos.length === 0 ? (
             <div className="bg-white/80 rounded-[28px] p-10 text-center text-gray-500 shadow-sm">この日のメモはまだありません。</div>
@@ -889,6 +928,9 @@ function handleModeImageFile(e) {
               <MemoCard
                 key={memo.id}
                 memo={memo}
+                typeFilter={typeFilter}
+                onRestore={restoreMemo}
+                onPermanentDelete={permanentDeleteMemo}
                 typeStyle={TYPE_STYLE}
                 Icon={Icon}
                 onEdit={openEdit}
@@ -898,6 +940,7 @@ function handleModeImageFile(e) {
                 onEditReply={openEditReply}
                 onDeleteReply={deleteReply}
                 renderText={renderTextWithInlineMedia}
+                
               />
             ))
           )}
