@@ -988,7 +988,7 @@ function renderTextWithInlineMedia(memo, editing = false) {
 }
     
   return (
-    <main className="min-h-screen bg-[#f4f2ef] flex text-[#1f2933]">
+   <main className="min-h-screen bg-[#f4f2ef] flex text-[#1f2933] pb-24 lg:pb-0">
       <Sidebar
   search={search}
   setSearch={setSearch}
@@ -1003,7 +1003,7 @@ function renderTextWithInlineMedia(memo, editing = false) {
   selectedDate={selectedDate}
 />
 
-      <section className="flex-1 p-10">
+      <section className="flex-1 p-4 lg:p-10">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-4xl font-bold tracking-tight">今日のアラート</h2>
@@ -1014,7 +1014,7 @@ function renderTextWithInlineMedia(memo, editing = false) {
         <div className="rounded-[32px] overflow-hidden shadow-lg mb-8 relative">
           <img
   src={selectedMode.image}
-  className="w-full h-[260px] object-cover brightness-[0.92]"
+  className="w-full h-[180px] lg:h-[260px] object-cover brightness-[0.92]"
   alt="header"
 />
           <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
@@ -1042,8 +1042,8 @@ function renderTextWithInlineMedia(memo, editing = false) {
                 onClick={() => openCreate(type)}
                 className={`flex-1 rounded-2xl py-5 font-bold transition text-white bg-gradient-to-r ${TYPE_STYLE[type].button} shadow-md hover:shadow-lg flex items-center justify-center gap-3`}
               >
-                <Icon name={iconName} className="w-6 h-6" />
-                <span>＋{type}</span>
+                <Icon name={iconName} className="w-7 h-7 lg:w-6 lg:h-6" />
+                <span className="hidden lg:inline">＋{type}</span>
               </button>
             );
           })}
@@ -1482,6 +1482,49 @@ function renderTextWithInlineMedia(memo, editing = false) {
           </div>
         </div>
       )}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/70 bg-white/85 backdrop-blur-xl px-2 py-2 shadow-[0_-8px_30px_rgba(0,0,0,.08)] lg:hidden">
+  <div className="grid grid-cols-6 gap-1">
+    {NAV_ITEMS.map((item) => (
+      <button
+        key={item.key}
+        type="button"
+        onClick={() => {
+          if (
+            [
+              "ホーム",
+              "つぶやき",
+              "ノート",
+              "ホワイトボード",
+              "ブックマーク",
+              "ゴミ箱",
+            ].includes(item.key)
+          ) {
+            setTypeFilter(item.key);
+          }
+        }}
+        className={`flex flex-col items-center justify-center rounded-2xl px-1 py-2 min-h-[64px] text-[10px] font-bold transition ${
+          typeFilter === item.key
+            ? item.key === "ゴミ箱"
+              ? "bg-red-50 text-red-600"
+              : item.key === "ブックマーク"
+              ? "bg-yellow-50 text-yellow-700"
+              : item.key === "ホーム"
+              ? "bg-pink-50 text-pink-600"
+              : "bg-gray-100 text-gray-800"
+            : "text-gray-500"
+        }`}
+      >
+        <Icon
+          name={item.icon}
+          className="mb-1 h-5 w-5"
+        />
+        <span className="mt-1 flex h-7 items-center justify-center text-center leading-tight">
+  {item.key}
+</span>
+      </button>
+    ))}
+  </div>
+</nav>
     </main>
    );
 }

@@ -16,7 +16,7 @@ setTypeFilter,
   selectedDate,
 }) {
   return (
-    <aside className="sticky top-0 h-screen overflow-y-auto w-[270px] bg-white/55 backdrop-blur-xl border-r border-white/60 shadow-[8px_0_40px_rgba(0,0,0,.04)] p-6 flex flex-col">
+    <aside className="hidden lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:w-[270px] lg:bg-white/55 lg:backdrop-blur-xl lg:border-r lg:border-white/60 lg:shadow-[8px_0_40px_rgba(0,0,0,.04)] lg:p-6 lg:flex lg:flex-col">
       <div className="mb-10 flex justify-center">
         <img
           src="/pbook-logo.png"
