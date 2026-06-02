@@ -329,6 +329,22 @@ export default function Home() {
   const [modalType, setModalType] = useState(null);
   const [editingMemo, setEditingMemo] = useState(null);
   const [search, setSearch] = useState("");
+  const [homeModes, setHomeModes] = useState([
+  {
+    id: "work",
+    name: "仕事用メモ",
+    image: "https://images.unsplash.com/photo-1517842645767-c639042777db?q=80&w=1600",
+  },
+  {
+    id: "study",
+    name: "学習用メモ",
+    image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1600",
+  },
+]);
+
+const [selectedModeId, setSelectedModeId] = useState("work");
+const [showModeModal, setShowModeModal] = useState(false);
+const [newModeName, setNewModeName] = useState("");
 
   const [replyTarget, setReplyTarget] = useState(null);
   const [editingReply, setEditingReply] = useState(null);
@@ -419,6 +435,27 @@ export default function Home() {
   }, [memos, selectedDate, search]);
 
   const getMemoCount = (date) => memos.filter((memo) => memo.date === date).length;
+
+const selectedMode = homeModes.find((mode) => mode.id === selectedModeId) || homeModes[0];
+
+function handleAddMode() {
+  const cleanName = newModeName.trim();
+
+  if (!cleanName) {
+    alert("タスク名を入力してください。");
+    return;
+  }
+
+  const newMode = {
+    id: uid("mode"),
+    name: cleanName,
+    image: selectedMode.image,
+  };
+
+  setHomeModes((prev) => [...prev, newMode]);
+  setSelectedModeId(newMode.id);
+  setNewModeName("");
+}
 
   function openCreate(type) {
     setModalType(type);
@@ -642,12 +679,17 @@ export default function Home() {
 
         <div className="rounded-[32px] overflow-hidden shadow-lg mb-8 relative">
           <img
-            src="https://images.unsplash.com/photo-1517842645767-c639042777db?q=80&w=1600"
-            className="w-full h-[260px] object-cover brightness-[0.92]"
-            alt="header"
-          />
+  src={selectedMode.image}
+  className="w-full h-[260px] object-cover brightness-[0.92]"
+  alt="header"
+/>
           <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
-          <div className="absolute bottom-5 left-5 bg-black/45 backdrop-blur-xl text-white px-5 py-2 rounded-full font-bold">仕事用メモ</div>
+          <button
+  onClick={() => setShowModeModal(true)}
+  className="absolute bottom-5 left-5 bg-black/45 backdrop-blur-xl text-white px-5 py-2 rounded-full font-bold hover:bg-black/60 transition"
+>
+  {selectedMode.name}
+</button>
           <button
             onClick={() => setShowCalendar(true)}
             className="absolute bottom-5 right-5 bg-white/90 backdrop-blur-xl px-5 py-2 rounded-full shadow-md font-bold flex items-center gap-2 hover:bg-white transition"
@@ -705,6 +747,61 @@ export default function Home() {
   setSelectedDate={setSelectedDate}
   Icon={Icon}
 />
+
+{showModeModal && (
+  <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-6">
+    <div className="w-full max-w-md bg-white rounded-[28px] shadow-2xl p-6">
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-2xl font-bold">タスク切替</h3>
+        <button
+          onClick={() => setShowModeModal(false)}
+          className="text-2xl text-gray-400 hover:text-gray-700"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="space-y-3 mb-5">
+        {homeModes.map((mode) => (
+          <button
+            key={mode.id}
+            onClick={() => {
+              setSelectedModeId(mode.id);
+              setShowModeModal(false);
+            }}
+            className={`w-full flex items-center justify-between rounded-2xl px-4 py-3 font-bold transition ${
+              selectedModeId === mode.id
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+            }`}
+          >
+            <span>{mode.name}</span>
+            <span className="text-sm opacity-80">編集</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="border-t border-gray-100 pt-5">
+        <p className="text-sm font-bold text-gray-500 mb-2">新規タスク追加</p>
+        <div className="flex gap-2">
+          <input
+            value={newModeName}
+            onChange={(e) => setNewModeName(e.target.value)}
+            placeholder="例：読書メモ"
+            className="flex-1 rounded-2xl border border-gray-200 px-4 py-3 outline-none"
+          />
+          <button
+            onClick={handleAddMode}
+            className="rounded-2xl bg-gray-900 text-white px-5 py-3 font-bold"
+          >
+            追加
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
       {modalType && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-6">
           <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white/95 rounded-[32px] shadow-2xl p-8">
