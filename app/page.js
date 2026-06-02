@@ -334,6 +334,7 @@ export default function Home() {
   const [modalType, setModalType] = useState(null);
   const [editingMemo, setEditingMemo] = useState(null);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("ホーム");
   const [homeModes, setHomeModes] = useState([
   {
     id: "work",
@@ -466,8 +467,15 @@ const [modeImageInput, setModeImageInput] = useState("");
   const visibleMemos = useMemo(() => {
     const q = search.trim().replace(/^#/, "").toLowerCase();
     return memos
-      .filter((memo) => memo.modeId === selectedModeId)
-.filter((memo) => memo.date === selectedDate)
+  .filter((memo) => memo.modeId === selectedModeId)
+  .filter((memo) => memo.date === selectedDate)
+  .filter((memo) => {
+    if (typeFilter === "ホーム") return true;
+    if (["つぶやき", "ノート", "ホワイトボード"].includes(typeFilter)) {
+      return memo.type === typeFilter;
+    }
+    return true;
+  })
       .filter((memo) => {
         if (!q) return true;
         const replyHay = JSON.stringify(memo.replies || []);
@@ -475,7 +483,7 @@ const [modeImageInput, setModeImageInput] = useState("");
         return hay.includes(q);
       })
       .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)));
-  }, [memos, selectedDate, search, selectedModeId]);
+}, [memos, selectedDate, search, selectedModeId, typeFilter]);
 
   const getMemoCount = (date) =>
   memos.filter((memo) => memo.modeId === selectedModeId && memo.date === date).length;
@@ -559,6 +567,24 @@ function handleDeleteMode(modeId) {
   setEditingModeName("");
   setModeImageInput("");
 }
+
+function moveMode(modeId, direction) {
+  setHomeModes((prev) => {
+    const index = prev.findIndex((mode) => mode.id === modeId);
+    if (index === -1) return prev;
+
+    const nextIndex = direction === "up" ? index - 1 : index + 1;
+    if (nextIndex < 0 || nextIndex >= prev.length) return prev;
+
+    const next = [...prev];
+    const temp = next[index];
+    next[index] = next[nextIndex];
+    next[nextIndex] = temp;
+
+    return next;
+  });
+}
+
 function handleModeImageFile(e) {
   const file = e.target.files?.[0];
   if (!file) return;
@@ -777,6 +803,8 @@ function handleModeImageFile(e) {
       <Sidebar
   search={search}
   setSearch={setSearch}
+    typeFilter={typeFilter}
+  setTypeFilter={setTypeFilter}
   allTags={allTags}
   navItems={NAV_ITEMS}
   typeStyle={TYPE_STYLE}
@@ -959,28 +987,50 @@ function handleModeImageFile(e) {
   <>
     <span>{mode.name}</span>
 
-    <div className="flex items-center gap-3">
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          startEditMode(mode);
-        }}
-        className="text-sm opacity-80 hover:opacity-100"
-      >
-        編集
-      </button>
+    <div className="flex items-center gap-2">
+  <button
+    type="button"
+    onClick={(e) => {
+      e.stopPropagation();
+      moveMode(mode.id, "up");
+    }}
+    className="text-xs opacity-70 hover:opacity-100"
+  >
+    ↑
+  </button>
 
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleDeleteMode(mode.id);
-        }}
-        className="text-sm text-red-500 opacity-80 hover:opacity-100"
-      >
-        削除
-      </button>
-    </div>
+  <button
+    type="button"
+    onClick={(e) => {
+      e.stopPropagation();
+      moveMode(mode.id, "down");
+    }}
+    className="text-xs opacity-70 hover:opacity-100"
+  >
+    ↓
+  </button>
+
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      startEditMode(mode);
+    }}
+    className="text-sm opacity-80 hover:opacity-100"
+  >
+    編集
+  </button>
+
+  <button
+    type="button"
+    onClick={(e) => {
+      e.stopPropagation();
+      handleDeleteMode(mode.id);
+    }}
+    className="text-sm text-red-500 opacity-80 hover:opacity-100"
+  >
+    削除
+  </button>
+</div>
   </>
 )}
           </div>

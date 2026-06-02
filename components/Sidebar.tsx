@@ -5,6 +5,8 @@ import TagSearch from "./TagSearch";
 export default function Sidebar({
   search,
   setSearch,
+  typeFilter,
+setTypeFilter,
   allTags,
   navItems,
   typeStyle,
@@ -37,13 +39,11 @@ export default function Sidebar({
           return (
             <button
               key={item.key}
-              onClick={() =>
-                isType
-                  ? openCreate(item.key)
-                  : item.key === "ブックマーク"
-                  ? setSearch("bookmarked")
-                  : null
-              }
+              onClick={() => {
+  if (["ホーム", "つぶやき", "ノート", "ホワイトボード"].includes(item.key)) {
+    setTypeFilter(item.key);
+  }
+}}
               className={`w-full text-left px-5 py-4 rounded-2xl transition flex items-center gap-3 ${
                 item.key === "ホーム"
                   ? "bg-pink-50 text-pink-600 font-bold shadow-sm"
