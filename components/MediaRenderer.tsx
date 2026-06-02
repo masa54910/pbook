@@ -7,10 +7,10 @@ export function MediaPreview({
 }) {
   const width = media.width || 64;
 
-  const widthStyle = {
-    width: `${width}%`,
-    maxWidth: "100%",
-  };
+const widthStyle = {
+  width: `${width}%`,
+  maxWidth: "100%",
+};
 
   return (
     <div className="my-3">
@@ -19,7 +19,7 @@ export function MediaPreview({
         <img
           src={media.url}
           alt="添付画像"
-          className="rounded-2xl object-cover"
+          className="w-full rounded-2xl object-contain"
           style={widthStyle}
         />
       )}

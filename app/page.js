@@ -365,6 +365,10 @@ const [modeImageInput, setModeImageInput] = useState("");
   const [formTags, setFormTags] = useState("");
   const [formMedia, setFormMedia] = useState([]);
   const [mediaSize, setMediaSize] = useState("medium");
+  const [drawColor, setDrawColor] = useState("#111827");
+  const [drawWidth, setDrawWidth] = useState(4);
+  const canvasRef = useRef(null);
+  const isDrawingRef = useRef(false);
   const noteTextRef = useRef(null);
 
   useEffect(() => {
@@ -621,6 +625,7 @@ function handleModeImageFile(e) {
     setFormTags("");
     setFormMedia([]);
     setMediaSize("medium");
+    
   }
 
   function openEdit(memo) {
@@ -631,6 +636,28 @@ function handleModeImageFile(e) {
     setFormTags((memo.tags || []).map((t) => `#${t}`).join(" "));
     setFormMedia(memo.media || []);
     setMediaSize("medium");
+    if (memo.type === "ホワイトボード") {
+  setTimeout(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const boardImage = (memo.media || []).find(
+      (m) => m.kind === "image" && m.mime === "image/png"
+    );
+
+    if (!boardImage?.url) return;
+
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+
+    img.src = boardImage.url;
+  }, 100);
+}
   }
 
   function closeModal() {
@@ -679,13 +706,25 @@ function handleModeImageFile(e) {
       return;
     }
 
-    if (!cleanText && formMedia.length === 0 && !cleanTitle) {
-      alert("内容を入力してください。画像・動画・ファイルだけでも投稿できます。");
-      return;
-    }
 
     const tags = Array.from(new Set([...extractTags(formTags), ...extractTags(cleanText)]));
+let nextMedia = formMedia;
 
+if (modalType === "ホワイトボード") {
+  const canvasMedia = getCanvasMedia();
+
+  if (canvasMedia) {
+    const otherMedia = formMedia.filter(
+      (m) => !(m.kind === "image" && m.mime === "image/png")
+    );
+
+    nextMedia = [...otherMedia, canvasMedia];
+  }
+}
+if (!cleanText && nextMedia.length === 0 && !cleanTitle) {
+  alert("内容を入力してください。画像・動画・ファイルだけでも投稿できます。");
+  return;
+}
     const payload = {
   id: editingMemo?.id || uid("memo"),
   modeId: selectedModeId,
@@ -697,8 +736,8 @@ function handleModeImageFile(e) {
       tags,
       pinned: editingMemo?.pinned || false,
       bookmarked: editingMemo?.bookmarked || false,
-      media: formMedia,
-      replies: editingMemo?.replies || [],
+media: nextMedia,
+replies: editingMemo?.replies || [],
     };
 
     setMemos((prev) => {
@@ -814,25 +853,107 @@ function permanentDeleteMemo(id) {
     setFormMedia((prev) => prev.map((m) => (m.id === mediaId ? { ...m, width } : m)));
     setReplyMedia((prev) => prev.map((m) => (m.id === mediaId ? { ...m, width } : m)));
   }
+function getCanvasPoint(e) {
+  const canvas = canvasRef.current;
+  if (!canvas) return null;
 
-  function renderTextWithInlineMedia(memo, editing = false) {
-    const parts = String(memo.text || "").split(/(\[media:[^\]]+\])/g);
-    return parts.map((part, index) => {
-      const match = part.match(/^\[media:([^\]]+)\]$/);
-      if (!match) {
-        return part ? (
-          <span key={index} className="whitespace-pre-wrap">
-            {part}
-          </span>
-        ) : null;
-      }
+  const rect = canvas.getBoundingClientRect();
 
-      const media = (memo.media || []).find((m) => m.id === match[1]);
-      if (!media) return null;
-      return <MediaPreview key={media.id} media={media} editing={editing} onWidthChange={changeMediaWidth} />;
-    });
-  }
+  return {
+    x: (e.clientX - rect.left) * (canvas.width / rect.width),
+    y: (e.clientY - rect.top) * (canvas.height / rect.height),
+  };
+}
 
+function startDrawing(e) {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const point = getCanvasPoint(e);
+  if (!point) return;
+
+  isDrawingRef.current = true;
+
+  ctx.beginPath();
+  ctx.moveTo(point.x, point.y);
+}
+
+function draw(e) {
+  if (!isDrawingRef.current) return;
+
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const point = getCanvasPoint(e);
+  if (!point) return;
+
+  ctx.lineWidth = drawWidth;
+  ctx.strokeStyle = drawColor;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  ctx.lineTo(point.x, point.y);
+  ctx.stroke();
+}
+
+function stopDrawing() {
+  isDrawingRef.current = false;
+}
+
+function clearCanvas() {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function getCanvasMedia() {
+  const canvas = canvasRef.current;
+  if (!canvas) return null;
+
+  const dataUrl = canvas.toDataURL("image/png");
+
+  return {
+    id: uid("media"),
+    kind: "image",
+    mime: "image/png",
+    url: dataUrl,
+    size: "large",
+    width: 100,
+  };
+}
+
+function renderTextWithInlineMedia(memo, editing = false) {
+  const parts = String(memo.text || "").split(/(\[media:[^\]]+\])/g);
+
+  return parts.map((part, index) => {
+    const match = part.match(/^\[media:([^\]]+)\]$/);
+
+    if (!match) {
+      return part ? (
+        <span key={index} className="whitespace-pre-wrap">
+          {part}
+        </span>
+      ) : null;
+    }
+
+    const media = (memo.media || []).find((m) => m.id === match[1]);
+    if (!media) return null;
+
+    return (
+      <MediaPreview
+        key={media.id}
+        media={media}
+        editing={editing}
+        onWidthChange={changeMediaWidth}
+      />
+    );
+  });
+}
+    
   return (
     <main className="min-h-screen bg-[#f4f2ef] flex text-[#1f2933]">
       <Sidebar
@@ -1198,13 +1319,55 @@ function permanentDeleteMemo(id) {
     </span>
   </div>
 
-  <textarea
-    value={formText}
-    onChange={(e) => setFormText(e.target.value)}
-    placeholder="ここにアイデア、構成、図の説明、ラフ案などを自由に書く。"
-    className="w-full min-h-[360px] rounded-2xl border border-dashed border-gray-300 bg-gray-50/70 px-6 py-5 outline-none resize-y leading-relaxed text-gray-800"
-  />
+  
+<div className="mt-5 rounded-2xl border border-gray-200 bg-white p-4">
+  <div className="mb-3 flex items-center gap-3">
+    <label className="text-sm font-bold text-gray-500">
+      色
+    </label>
 
+    <input
+      type="color"
+      value={drawColor}
+      onChange={(e) => setDrawColor(e.target.value)}
+      className="h-9 w-12 cursor-pointer"
+    />
+
+    <label className="text-sm font-bold text-gray-500">
+      太さ
+    </label>
+
+    <select
+      value={drawWidth}
+      onChange={(e) => setDrawWidth(Number(e.target.value))}
+      className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
+    >
+      <option value={2}>細い</option>
+      <option value={4}>普通</option>
+      <option value={8}>太い</option>
+      <option value={14}>極太</option>
+    </select>
+
+    <button
+      type="button"
+      onClick={clearCanvas}
+      className="ml-auto rounded-full bg-gray-100 px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-200"
+    >
+      クリア
+    </button>
+  </div>
+
+  <canvas
+  ref={canvasRef}
+  width={900}
+  height={420}
+  onMouseDown={startDrawing}
+  onMouseMove={draw}
+  onMouseUp={stopDrawing}
+  onMouseLeave={stopDrawing}
+  className="w-full cursor-crosshair rounded-xl border border-dashed border-gray-300 bg-white"
+/>
+</div>
   <div className="mt-4">
     <MediaToolbar
       type={modalType}

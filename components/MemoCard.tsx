@@ -206,9 +206,34 @@ export default function MemoCard({
       )}
 
       {(!isNote || noteExpanded) &&
-        bottomMedia.length > 0 && (
-          <FixedMediaShelf media={bottomMedia} />
-        )}
+  bottomMedia.length > 0 && (
+    <div
+      className={
+        memo.type === "ホワイトボード"
+          ? "[&_img]:w-full [&_img]:max-w-full [&_img]:rounded-2xl [&_img]:border [&_img]:border-gray-200"
+          : ""
+      }
+    >
+    {memo.type === "ホワイトボード" ? (
+  <div className="mt-6 w-full">
+    {bottomMedia.map((media) => (
+      media.kind === "image" && media.url ? (
+        <img
+          key={media.id}
+          src={media.url}
+          alt="ホワイトボード"
+          className="w-full max-w-none rounded-2xl border border-gray-200 bg-white object-contain"
+        />
+      ) : (
+        <FixedMediaShelf key={media.id} media={[media]} />
+      )
+    ))}
+  </div>
+) : (
+  <FixedMediaShelf media={bottomMedia} />
+)}
+    </div>
+)}
 
       <TagList tags={memo.tags} />
 
