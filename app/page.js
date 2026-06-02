@@ -334,8 +334,10 @@ export default function Home() {
   const [modalType, setModalType] = useState(null);
   const [editingMemo, setEditingMemo] = useState(null);
   const [search, setSearch] = useState("");
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [typeFilter, setTypeFilter] = useState("ホーム");
   const [homeModes, setHomeModes] = useState([
+    
   {
     id: "work",
     name: "仕事用メモ",
@@ -1004,14 +1006,9 @@ function renderTextWithInlineMedia(memo, editing = false) {
 />
 
       <section className="flex-1 p-4 lg:p-10">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h2 className="text-4xl font-bold tracking-tight">今日のアラート</h2>
-            <p className="text-gray-500 mt-2">「昼休みにアイデア整理をする」</p>
-          </div>
-        </div>
+        
 
-        <div className="rounded-[32px] overflow-hidden shadow-lg mb-8 relative">
+        <div className="rounded-[32px] overflow-hidden shadow-lg mb-4 relative">
           <img
   src={selectedMode.image}
   className="w-full h-[180px] lg:h-[260px] object-cover brightness-[0.92]"
