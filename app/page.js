@@ -48,8 +48,9 @@ const today = "2026-05-30";
 
 const initialMemos = [
   {
-    id: "sample-1",
-    type: "つぶやき",
+  id: "sample-1",
+  modeId: "work",
+  type: "つぶやき",
     title: "今日のランチはピザ🍕",
     text: "とても美味しかった！明日は何を食べようかな。新しいカフェにも行ってみたい。",
     date: "2026-05-30",
@@ -79,8 +80,9 @@ const initialMemos = [
     ],
   },
   {
-    id: "sample-2",
-    type: "ノート",
+  id: "sample-2",
+  modeId: "work",
+  type: "ノート",
     title: "新しいプロジェクトのアイデア",
     text: "ユーザーの思考を整理し、アイデアを視覚化できるプライベート空間にする。\n\nAIを活用して、関連するアイデアを提案する機能も追加したい。",
     date: "2026-05-30",
@@ -92,8 +94,9 @@ const initialMemos = [
     replies: [],
   },
   {
-    id: "sample-3",
-    type: "ホワイトボード",
+  id: "sample-3",
+  modeId: "work",
+  type: "ホワイトボード",
     title: "サービス改善のブレスト",
     text: "ユーザーの声を集めて、改善点を洗い出す。",
     date: "2026-05-29",
@@ -347,6 +350,7 @@ const [showModeModal, setShowModeModal] = useState(false);
 const [newModeName, setNewModeName] = useState("");
 const [editingModeId, setEditingModeId] = useState(null);
 const [editingModeName, setEditingModeName] = useState("");
+const [modeImageInput, setModeImageInput] = useState("");
   const [replyTarget, setReplyTarget] = useState(null);
   const [editingReply, setEditingReply] = useState(null);
   const [replyText, setReplyText] = useState("");
@@ -366,7 +370,13 @@ const [editingModeName, setEditingModeName] = useState("");
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
-          setMemos(parsed.map((memo) => ({ ...memo, replies: restoreReplyShape(memo.replies || []) })));
+          setMemos(
+  parsed.map((memo) => ({
+    ...memo,
+    modeId: memo.modeId || "work",
+    replies: restoreReplyShape(memo.replies || []),
+  }))
+);
         }
       }
     } catch (error) {
@@ -425,7 +435,8 @@ const [editingModeName, setEditingModeName] = useState("");
   const visibleMemos = useMemo(() => {
     const q = search.trim().replace(/^#/, "").toLowerCase();
     return memos
-      .filter((memo) => memo.date === selectedDate)
+      .filter((memo) => memo.modeId === selectedModeId)
+.filter((memo) => memo.date === selectedDate)
       .filter((memo) => {
         if (!q) return true;
         const replyHay = JSON.stringify(memo.replies || []);
@@ -433,10 +444,10 @@ const [editingModeName, setEditingModeName] = useState("");
         return hay.includes(q);
       })
       .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)));
-  }, [memos, selectedDate, search]);
+  }, [memos, selectedDate, search, selectedModeId]);
 
-  const getMemoCount = (date) => memos.filter((memo) => memo.date === date).length;
-
+  const getMemoCount = (date) =>
+  memos.filter((memo) => memo.modeId === selectedModeId && memo.date === date).length;
 const selectedMode = homeModes.find((mode) => mode.id === selectedModeId) || homeModes[0];
 
 function handleAddMode() {
@@ -461,8 +472,8 @@ function handleAddMode() {
 function startEditMode(mode) {
   setEditingModeId(mode.id);
   setEditingModeName(mode.name);
+  setModeImageInput(mode.image || "");
 }
-
 function saveModeName() {
   const clean = editingModeName.trim();
 
@@ -473,12 +484,32 @@ function saveModeName() {
 
   setHomeModes((prev) =>
     prev.map((mode) =>
-      mode.id === editingModeId ? { ...mode, name: clean } : mode
+      mode.id === editingModeId
+        ? {
+            ...mode,
+            name: clean,
+            image: modeImageInput || mode.image,
+          }
+        : mode
     )
   );
 
   setEditingModeId(null);
   setEditingModeName("");
+  setModeImageInput("");
+}
+function handleModeImageFile(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    setModeImageInput(String(reader.result || ""));
+  };
+
+  reader.readAsDataURL(file);
+  e.target.value = "";
 }
 
   function openCreate(type) {
@@ -555,8 +586,9 @@ function saveModeName() {
     const tags = Array.from(new Set([...extractTags(formTags), ...extractTags(cleanText)]));
 
     const payload = {
-      id: editingMemo?.id || uid("memo"),
-      type: modalType,
+  id: editingMemo?.id || uid("memo"),
+  modeId: selectedModeId,
+  type: modalType,
       title: modalType === "つぶやき" ? cleanTitle || cleanText.slice(0, 24) || "つぶやき" : cleanTitle || `${modalType}メモ`,
       text: cleanText,
       date: selectedDate,
@@ -790,9 +822,10 @@ function saveModeName() {
           <div
             key={mode.id}
             onClick={() => {
-              setSelectedModeId(mode.id);
-              setShowModeModal(false);
-            }}
+  if (editingModeId) return;
+  setSelectedModeId(mode.id);
+  setShowModeModal(false);
+}}
             className={`w-full flex items-center justify-between rounded-2xl px-4 py-3 font-bold transition ${
               selectedModeId === mode.id
                 ? "bg-blue-500 text-white"
@@ -800,23 +833,64 @@ function saveModeName() {
             }`}
           >
             {editingModeId === mode.id ? (
-  <div className="flex gap-2 w-full">
+  <div className="flex flex-col gap-2 w-full">
     <input
-  value={editingModeName}
-  onClick={(e) => e.stopPropagation()}
-  onChange={(e) => setEditingModeName(e.target.value)}
-  className="flex-1 rounded-xl px-3 py-2 text-black"
+  value={newModeName}
+  onChange={(e) => setNewModeName(e.target.value)}
+  placeholder="例：読書メモ"
+  className="flex-1 rounded-2xl border border-gray-200 px-4 py-3 outline-none"
 />
+<div className="flex gap-2">
+  <input
+    value={modeImageInput}
+    onClick={(e) => e.stopPropagation()}
+    onChange={(e) => setModeImageInput(e.target.value)}
+    placeholder="画像URL"
+    className="flex-1 rounded-xl px-3 py-2 text-black"
+  />
 
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        saveModeName();
-      }}
-      className="text-sm px-3 py-2 rounded-xl bg-white/20"
-    >
-      保存
-    </button>
+  <button
+    type="button"
+    onClick={(e) => {
+      e.stopPropagation();
+      setModeImageInput("");
+    }}
+    className="rounded-xl bg-white/20 px-3 py-2 text-sm font-bold"
+  >
+    クリア
+  </button>
+</div>
+
+<div onClick={(e) => e.stopPropagation()}>
+  <label className="block cursor-pointer rounded-xl bg-white/20 px-3 py-2 text-sm font-bold text-center">
+    ローカル画像を選択
+    <input
+      type="file"
+      accept="image/*"
+      hidden
+      onChange={handleModeImageFile}
+    />
+  </label>
+</div>
+
+{modeImageInput && (
+  <img
+    src={modeImageInput}
+    alt="タスク画像プレビュー"
+    className="h-20 w-full rounded-xl object-cover border border-white/30"
+  />
+)}
+
+<button
+  type="button"
+  onClick={(e) => {
+    e.stopPropagation();
+    saveModeName();
+  }}
+  className="text-sm px-3 py-2 rounded-xl bg-white/20"
+>
+  保存
+</button>
   </div>
 ) : (
   <>
@@ -841,11 +915,12 @@ function saveModeName() {
         <p className="text-sm font-bold text-gray-500 mb-2">新規タスク追加</p>
         <div className="flex gap-2">
           <input
-            value={newModeName}
-            onChange={(e) => setNewModeName(e.target.value)}
-            placeholder="例：読書メモ"
-            className="flex-1 rounded-2xl border border-gray-200 px-4 py-3 outline-none"
-          />
+  value={editingModeName}
+  autoFocus
+  onClick={(e) => e.stopPropagation()}
+  onChange={(e) => setEditingModeName(e.target.value)}
+  className="flex-1 rounded-xl bg-white px-3 py-2 text-black outline-none ring-2 ring-white/70"
+/>
           <button
             onClick={handleAddMode}
             className="rounded-2xl bg-gray-900 text-white px-5 py-3 font-bold"
@@ -886,11 +961,12 @@ function saveModeName() {
 
             {modalType !== "つぶやき" && (
               <input
-                value={formTitle}
-                onChange={(e) => setFormTitle(e.target.value)}
-                placeholder="タイトル"
-                className="w-full mb-4 rounded-2xl border border-gray-200 px-5 py-4 outline-none"
-              />
+  value={editingModeName}
+  autoFocus
+  onClick={(e) => e.stopPropagation()}
+  onChange={(e) => setEditingModeName(e.target.value)}
+  className="flex-1 rounded-xl bg-white px-3 py-2 text-black outline-none ring-2 ring-white/70"
+/>
             )}
 
             {modalType === "つぶやき" ? (
