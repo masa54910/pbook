@@ -470,12 +470,26 @@ const [modeImageInput, setModeImageInput] = useState("");
   .filter((memo) => memo.modeId === selectedModeId)
   .filter((memo) => memo.date === selectedDate)
   .filter((memo) => {
-    if (typeFilter === "ホーム") return true;
-    if (["つぶやき", "ノート", "ホワイトボード"].includes(typeFilter)) {
-      return memo.type === typeFilter;
-    }
-    return true;
-  })
+  if (typeFilter === "ゴミ箱") {
+    return memo.deleted === true;
+  }
+
+  if (memo.deleted === true) {
+    return false;
+  }
+
+  if (typeFilter === "ホーム") return true;
+
+  if (typeFilter === "ブックマーク") {
+    return memo.bookmarked === true;
+  }
+
+  if (["つぶやき", "ノート", "ホワイトボード"].includes(typeFilter)) {
+    return memo.type === typeFilter;
+  }
+
+  return true;
+})
       .filter((memo) => {
         if (!q) return true;
         const replyHay = JSON.stringify(memo.replies || []);
@@ -695,9 +709,16 @@ function handleModeImageFile(e) {
   }
 
   function deleteMemo(id) {
-    if (!confirm("このメモを削除しますか？")) return;
-    setMemos((prev) => prev.filter((memo) => memo.id !== id));
-  }
+  if (!confirm("このメモをゴミ箱に移動しますか？")) return;
+
+  setMemos((prev) =>
+    prev.map((memo) =>
+      memo.id === id
+        ? { ...memo, deleted: true }
+        : memo
+    )
+  );
+}
 
   function updateMemo(id, patch) {
     setMemos((prev) => prev.map((memo) => (memo.id === id ? { ...memo, ...patch } : memo)));

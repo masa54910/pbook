@@ -40,9 +40,18 @@ setTypeFilter,
             <button
               key={item.key}
               onClick={() => {
-  if (["ホーム", "つぶやき", "ノート", "ホワイトボード"].includes(item.key)) {
-    setTypeFilter(item.key);
-  }
+  if (
+  [
+    "ホーム",
+    "つぶやき",
+    "ノート",
+    "ホワイトボード",
+    "ブックマーク",
+    "ゴミ箱",
+  ].includes(item.key)
+) {
+  setTypeFilter(item.key);
+}
 }}
               className={`w-full text-left px-5 py-4 rounded-2xl transition flex items-center gap-3 ${
                 item.key === "ホーム"
