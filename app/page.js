@@ -7,6 +7,8 @@ import Sidebar from "../components/Sidebar";
 import ReplyTree from "../components/ReplyTree";
 import MemoCard from "../components/MemoCard";
 const STORAGE_KEY = "pbook-memos-v4";
+const MODE_STORAGE_KEY = "pbook-modes-v1";
+const MODE_SELECTED_KEY = "pbook-selected-mode-v1";
 
 const TYPE_STYLE = {
   つぶやき: {
@@ -367,6 +369,26 @@ const [modeImageInput, setModeImageInput] = useState("");
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
+      useEffect(() => {
+  try {
+    const storedModes = localStorage.getItem(MODE_STORAGE_KEY);
+    const storedSelected = localStorage.getItem(MODE_SELECTED_KEY);
+
+    if (storedModes) {
+      const parsed = JSON.parse(storedModes);
+
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        setHomeModes(parsed);
+      }
+    }
+
+    if (storedSelected) {
+      setSelectedModeId(storedSelected);
+    }
+  } catch (error) {
+    console.warn("モード復元失敗", error);
+  }
+}, []);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
@@ -396,6 +418,15 @@ const [modeImageInput, setModeImageInput] = useState("");
       console.warn("localStorage保存に失敗しました。画像・動画は一時表示扱いです。", error);
     }
   }, [memos]);
+
+  useEffect(() => {
+  try {
+    localStorage.setItem(MODE_STORAGE_KEY, JSON.stringify(homeModes));
+    localStorage.setItem(MODE_SELECTED_KEY, selectedModeId);
+  } catch (error) {
+    console.warn("モード保存失敗", error);
+  }
+}, [homeModes, selectedModeId]);
 
   const allTags = useMemo(() => {
     const tagCounts = new Map();
@@ -834,11 +865,13 @@ function handleModeImageFile(e) {
           >
             {editingModeId === mode.id ? (
   <div className="flex flex-col gap-2 w-full">
-    <input
-  value={newModeName}
-  onChange={(e) => setNewModeName(e.target.value)}
-  placeholder="例：読書メモ"
-  className="flex-1 rounded-2xl border border-gray-200 px-4 py-3 outline-none"
+   <input
+  value={editingModeName}
+  autoFocus
+  onClick={(e) => e.stopPropagation()}
+  onChange={(e) => setEditingModeName(e.target.value)}
+  placeholder="タスク名"
+  className="flex-1 rounded-xl bg-white px-3 py-2 text-black outline-none ring-2 ring-white/70"
 />
 <div className="flex gap-2">
   <input
@@ -915,11 +948,10 @@ function handleModeImageFile(e) {
         <p className="text-sm font-bold text-gray-500 mb-2">新規タスク追加</p>
         <div className="flex gap-2">
           <input
-  value={editingModeName}
-  autoFocus
-  onClick={(e) => e.stopPropagation()}
-  onChange={(e) => setEditingModeName(e.target.value)}
-  className="flex-1 rounded-xl bg-white px-3 py-2 text-black outline-none ring-2 ring-white/70"
+  value={newModeName}
+  onChange={(e) => setNewModeName(e.target.value)}
+  placeholder="例：読書メモ"
+  className="flex-1 rounded-2xl border border-gray-200 px-4 py-3 outline-none"
 />
           <button
             onClick={handleAddMode}
