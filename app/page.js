@@ -367,6 +367,8 @@ const [modeImageInput, setModeImageInput] = useState("");
   const [mediaSize, setMediaSize] = useState("medium");
   const [drawColor, setDrawColor] = useState("#111827");
   const [drawWidth, setDrawWidth] = useState(4);
+  const [isEraser, setIsEraser] = useState(false);
+const canvasHistoryRef = useRef([]);
   const canvasRef = useRef(null);
   const isDrawingRef = useRef(false);
   const noteTextRef = useRef(null);
@@ -853,6 +855,34 @@ function permanentDeleteMemo(id) {
     setFormMedia((prev) => prev.map((m) => (m.id === mediaId ? { ...m, width } : m)));
     setReplyMedia((prev) => prev.map((m) => (m.id === mediaId ? { ...m, width } : m)));
   }
+  function saveCanvasHistory() {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+
+  canvasHistoryRef.current.push(canvas.toDataURL("image/png"));
+
+  if (canvasHistoryRef.current.length > 30) {
+    canvasHistoryRef.current.shift();
+  }
+}
+
+function undoCanvas() {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+
+  const last = canvasHistoryRef.current.pop();
+  if (!last) return;
+
+  const ctx = canvas.getContext("2d");
+  const img = new Image();
+
+  img.onload = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  };
+
+  img.src = last;
+}
 function getCanvasPoint(e) {
   const canvas = canvasRef.current;
   if (!canvas) return null;
@@ -873,6 +903,8 @@ function startDrawing(e) {
   const point = getCanvasPoint(e);
   if (!point) return;
 
+  saveCanvasHistory();
+
   isDrawingRef.current = true;
 
   ctx.beginPath();
@@ -890,7 +922,7 @@ function draw(e) {
   if (!point) return;
 
   ctx.lineWidth = drawWidth;
-  ctx.strokeStyle = drawColor;
+  ctx.strokeStyle = isEraser ? "#ffffff" : drawColor;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
@@ -1347,7 +1379,25 @@ function renderTextWithInlineMedia(memo, editing = false) {
       <option value={8}>太い</option>
       <option value={14}>極太</option>
     </select>
+<button
+  type="button"
+  onClick={undoCanvas}
+  className="rounded-full bg-gray-100 px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-200"
+>
+  ↩ 戻る
+</button>
 
+<button
+  type="button"
+  onClick={() => setIsEraser((prev) => !prev)}
+  className={`rounded-full px-4 py-2 text-sm font-bold ${
+    isEraser
+      ? "bg-red-100 text-red-600"
+      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+  }`}
+>
+  🧽 消しゴム
+</button>
     <button
       type="button"
       onClick={clearCanvas}
@@ -1369,20 +1419,13 @@ function renderTextWithInlineMedia(memo, editing = false) {
 />
 </div>
   <div className="mt-4">
-    <MediaToolbar
-      type={modalType}
-      mediaSize={mediaSize}
-      setMediaSize={setMediaSize}
-      onSelect={handleMediaSelect}
-    />
-
-    <FixedMediaShelf
-      media={formMedia}
-      setMedia={setFormMedia}
-      editing
-      onWidthChange={changeMediaWidth}
-    />
-  </div>
+  <MediaToolbar
+    type={modalType}
+    mediaSize={mediaSize}
+    setMediaSize={setMediaSize}
+    onSelect={handleMediaSelect}
+  />
+</div>
 </div>
             )}
 
@@ -1421,7 +1464,7 @@ function renderTextWithInlineMedia(memo, editing = false) {
         </div>
       )}
     </main>
-  );
+   );
 }
 
 function plainMemoText(text) {
