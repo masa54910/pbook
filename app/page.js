@@ -529,6 +529,36 @@ function saveModeName() {
   setEditingModeName("");
   setModeImageInput("");
 }
+function handleDeleteMode(modeId) {
+  
+
+  const targetMode = homeModes.find(
+    (mode) => mode.id === modeId
+  );
+
+  const ok = window.confirm(
+    `「${targetMode?.name || "このタスク"}」を削除しますか？
+このタスク内のメモも削除されます。`
+  );
+
+  if (!ok) return;
+
+  setHomeModes((prev) =>
+    prev.filter((mode) => mode.id !== modeId)
+  );
+
+  setMemos((prev) =>
+    prev.filter((memo) => memo.modeId !== modeId)
+  );
+
+  if (selectedModeId === modeId) {
+    setSelectedModeId("work");
+  }
+
+  setEditingModeId(null);
+  setEditingModeName("");
+  setModeImageInput("");
+}
 function handleModeImageFile(e) {
   const file = e.target.files?.[0];
   if (!file) return;
@@ -929,15 +959,28 @@ function handleModeImageFile(e) {
   <>
     <span>{mode.name}</span>
 
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        startEditMode(mode);
-      }}
-      className="text-sm opacity-80 hover:opacity-100"
-    >
-      編集
-    </button>
+    <div className="flex items-center gap-3">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          startEditMode(mode);
+        }}
+        className="text-sm opacity-80 hover:opacity-100"
+      >
+        編集
+      </button>
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleDeleteMode(mode.id);
+        }}
+        className="text-sm text-red-500 opacity-80 hover:opacity-100"
+      >
+        削除
+      </button>
+    </div>
   </>
 )}
           </div>
