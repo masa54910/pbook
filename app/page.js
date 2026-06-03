@@ -1300,14 +1300,14 @@ function renderTextWithInlineMedia(memo, editing = false) {
             </div>
 
             {modalType !== "つぶやき" && (
-              <input
-  value={editingModeName}
-  autoFocus
-  onClick={(e) => e.stopPropagation()}
-  onChange={(e) => setEditingModeName(e.target.value)}
-  className="flex-1 rounded-xl bg-white px-3 py-2 text-black outline-none ring-2 ring-white/70"
-/>
-            )}
+  <input
+    value={formTitle}
+    autoFocus
+    onChange={(e) => setFormTitle(e.target.value)}
+    placeholder={`${modalType}のタイトル`}
+    className="mb-5 w-full rounded-2xl border border-gray-200 px-5 py-4 text-black outline-none"
+  />
+)}
 
             {modalType === "つぶやき" ? (
               <>
