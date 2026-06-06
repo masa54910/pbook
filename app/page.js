@@ -46,7 +46,7 @@ const NAV_ITEMS = [
   { key: "ゴミ箱", icon: "trash" },
 ];
 
-const today = new Date().toISOString().slice(0, 10);
+const today = "2026-06-06";
 
 const initialMemos = [
   {
@@ -370,6 +370,7 @@ const [modeImageInput, setModeImageInput] = useState("");
   const [mediaSize, setMediaSize] = useState("medium");
   const [drawColor, setDrawColor] = useState("#111827");
   const [drawWidth, setDrawWidth] = useState(4);
+  const [isMounted, setIsMounted] = useState(false);
   const [eraserWidth, setEraserWidth] = useState(24);
   const [isEraser, setIsEraser] = useState(false);
   const canvasHistoryRef = useRef([]);
@@ -378,6 +379,7 @@ const [modeImageInput, setModeImageInput] = useState("");
   const noteTextRef = useRef(null);
 
   useEffect(() => {
+    setIsMounted(true);
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
 
@@ -1006,6 +1008,7 @@ function renderTextWithInlineMedia(memo, editing = false) {
     const media = (memo.media || []).find((m) => m.id === match[1]);
     if (!media) return null;
 
+
     return (
       <MediaPreview
         key={media.id}
@@ -1016,6 +1019,8 @@ function renderTextWithInlineMedia(memo, editing = false) {
     );
   });
 }
+
+if (!isMounted) return null;
     
   return (
    <main className="min-h-screen bg-[#f4f2ef] flex text-[#1f2933] pb-24 lg:pb-0">
