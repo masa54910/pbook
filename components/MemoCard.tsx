@@ -225,7 +225,12 @@ export default function MemoCard({
           className="w-full max-w-none rounded-2xl border border-gray-200 bg-white object-contain"
         />
       ) : (
-        <FixedMediaShelf key={media.id} media={[media]} />
+        <FixedMediaShelf
+  key={media.id}
+  media={[media]}
+  onRemove={() => {}}
+  editable={false}
+/>
       )
     ))}
   </div>
