@@ -921,10 +921,11 @@ function getCanvasPoint(e) {
   if (!canvas) return null;
 
   const rect = canvas.getBoundingClientRect();
+  const source = e.touches ? e.touches[0] : e;
 
   return {
-    x: (e.clientX - rect.left) * (canvas.width / rect.width),
-    y: (e.clientY - rect.top) * (canvas.height / rect.height),
+    x: (source.clientX - rect.left) * (canvas.width / rect.width),
+    y: (source.clientY - rect.top) * (canvas.height / rect.height),
   };
 }
 
@@ -1145,15 +1146,16 @@ if (!isMounted) return null;
 {showModeModal && (
   <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-6">
     <div className="w-full max-w-md bg-white rounded-[28px] shadow-2xl p-6">
-      <div className="flex items-center justify-between mb-5">
-        <h3 className="text-2xl font-bold">タスク切替</h3>
-        <button
-          onClick={() => setShowModeModal(false)}
-          className="text-2xl text-gray-400 hover:text-gray-700"
-        >
-          ×
-        </button>
-      </div>
+      <div className="flex items-start justify-between gap-3 mb-5">
+  <h3 className="text-2xl font-bold">タスク切替</h3>
+
+  <button
+    onClick={closeModal}
+    className="text-2xl text-gray-400 hover:text-gray-700 shrink-0"
+  >
+    ×
+  </button>
+</div>
 
       <div className="space-y-3 mb-5">
         {homeModes.map((mode) => (
@@ -1328,26 +1330,30 @@ if (!isMounted) return null;
 
       {modalType && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-6">
-          <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white/95 rounded-[32px] shadow-2xl p-8">
-            <div className="flex justify-between items-center mb-6 gap-4">
-              <h3 className="text-3xl font-bold">{editingMemo ? "編集" : "新規作成"}：{modalType}</h3>
+          <div className="w-[92vw] max-w-3xl max-h-[86vh] overflow-y-auto bg-white/95 rounded-[28px] shadow-2xl p-5 lg:p-8">
+            <div className="flex items-start justify-between mb-6 gap-3">
+  <h3 className="text-[42px] sm:text-2xl font-bold leading-none break-words">
+  {editingMemo ? "編集" : "新規作成"}：{modalType}
+</h3>
 
-              {modalType === "ノート" ? (
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={closeModal}
-                    className="px-5 py-3 rounded-full bg-gray-100 font-bold hover:bg-gray-200 transition"
-                  >
-                    キャンセル
-                  </button>
-                  <button
-                    onClick={submitMemo}
-                    className={`px-6 py-3 rounded-full text-white font-bold bg-gradient-to-r ${TYPE_STYLE[modalType].button} shadow-md hover:shadow-lg transition`}
-                  >
-                    {editingMemo ? "更新する" : "投稿する"}
-                  </button>
-                </div>
-              ) : (
+{modalType === "ノート" ? (
+  <div className="flex shrink-0 flex-col gap-2 lg:flex-row lg:items-center lg:gap-3">
+    <button
+      onClick={closeModal}
+      className="px-4 py-2 rounded-full bg-gray-100 text-sm font-bold hover:bg-gray-200 transition"
+    >
+      キャンセル
+    </button>
+
+    <button
+      onClick={submitMemo}
+      className={`px-4 py-2 rounded-full text-white text-sm font-bold bg-gradient-to-r ${TYPE_STYLE[modalType].button} shadow-md hover:shadow-lg transition`}
+    >
+      {editingMemo ? "更新する" : "投稿する"}
+    </button>
+  </div>
+) : (
+              
                 <button onClick={closeModal} className="text-2xl text-gray-400 hover:text-gray-700">×</button>
               )}
             </div>
@@ -1376,7 +1382,7 @@ if (!isMounted) return null;
               </>
             ) : modalType === "ノート" ? (
               <div className="relative">
-                <div className="mb-3 flex items-center gap-3">
+                <div className="mb-3 flex flex-wrap items-center gap-2 overflow-x-auto pb-2 text-sm lg:overflow-visible">
                   <MediaToolbar type={modalType} mediaSize={mediaSize} setMediaSize={setMediaSize} onSelect={handleMediaSelect} compact />
                 </div>
                 <textarea
@@ -1435,25 +1441,23 @@ if (!isMounted) return null;
   onClick={undoCanvas}
   className="rounded-full bg-gray-100 px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-200"
 >
-  ↩ 戻る
+  ↩ 
 </button>
 
 <button
   type="button"
   onClick={() => setIsEraser((prev) => !prev)}
-  className={`rounded-full px-4 py-2 text-sm font-bold ${
-    isEraser
-      ? "bg-red-100 text-red-600"
-      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-  }`}
+  className={`shrink-0 rounded-full px-3 py-2 text-xs lg:text-sm font-bold ${
+  isEraser
+    ? "bg-red-100 text-red-600"
+    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+}`}
 >
-  🧽 消しゴム
+  🧽
 </button>
 {isEraser && (
   <>
-    <label className="text-sm font-bold text-gray-500">
-      消し幅
-    </label>
+    
 
     <select
       value={eraserWidth}
@@ -1470,7 +1474,7 @@ if (!isMounted) return null;
     <button
       type="button"
       onClick={clearCanvas}
-      className="ml-auto rounded-full bg-gray-100 px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-200"
+      className="shrink-0 whitespace-nowrap rounded-full bg-gray-100 px-3 py-2 text-xs font-bold text-gray-600 hover:bg-gray-200"
     >
       クリア
     </button>
@@ -1479,12 +1483,24 @@ if (!isMounted) return null;
   <canvas
   ref={canvasRef}
   width={900}
-  height={420}
+  height={520}
   onMouseDown={startDrawing}
   onMouseMove={draw}
   onMouseUp={stopDrawing}
   onMouseLeave={stopDrawing}
-  className="w-full cursor-crosshair rounded-xl border border-dashed border-gray-300 bg-white"
+  onTouchStart={(e) => {
+    e.preventDefault();
+    startDrawing(e);
+  }}
+  onTouchMove={(e) => {
+    e.preventDefault();
+    draw(e);
+  }}
+  onTouchEnd={(e) => {
+    e.preventDefault();
+    stopDrawing();
+  }}
+  className="h-[300px] w-full touch-none cursor-crosshair rounded-xl border border-dashed border-gray-300 bg-white lg:h-auto"
 />
 </div>
   <div className="mt-4">
@@ -1621,16 +1637,16 @@ function TagList({ tags = [], small = false }) {
 
 function MediaToolbar({ type, mediaSize, setMediaSize, onSelect, compact = false }) {
   return (
-    <div className={`flex items-center gap-3 flex-wrap ${compact ? "" : "mb-4 mt-4"}`}>
+    <div className={`flex items-center gap-2 sm:gap-3 flex-wrap ${compact ? "" : "mb-4 mt-4"}`}>
       {type === "ノート" && <span className="w-10 h-10 rounded-full border-2 border-gray-700 flex items-center justify-center text-xl font-bold">＋</span>}
       <select value={mediaSize} onChange={(e) => setMediaSize(e.target.value)} className="rounded-full bg-gray-100 px-3 py-2 text-sm outline-none">
         <option value="small">小</option>
         <option value="medium">中</option>
         <option value="large">大</option>
       </select>
-      <label className="cursor-pointer rounded-full bg-gray-100 px-4 py-2 text-sm font-bold hover:bg-gray-200">🖼 画像<input type="file" accept="image/*" hidden onChange={(e) => onSelect(e, type)} /></label>
-      <label className="cursor-pointer rounded-full bg-gray-100 px-4 py-2 text-sm font-bold hover:bg-gray-200">🎞 動画<input type="file" accept="video/*" hidden onChange={(e) => onSelect(e, type)} /></label>
-      <label className="cursor-pointer rounded-full bg-gray-100 px-4 py-2 text-sm font-bold hover:bg-gray-200">📎 ファイル<input type="file" hidden onChange={(e) => onSelect(e, type)} /></label>
+      <label className="cursor-pointer rounded-full bg-gray-100 px-3 py-2 text-sm font-bold hover:bg-gray-200">🖼 画像<input type="file" accept="image/*" hidden onChange={(e) => onSelect(e, type)} /></label>
+      <label className="cursor-pointer rounded-full bg-gray-100 px-3 py-2 text-sm font-bold hover:bg-gray-200">🎞 動画<input type="file" accept="video/*" hidden onChange={(e) => onSelect(e, type)} /></label>
+      <label className="cursor-pointer rounded-full bg-gray-100 px-3 py-2 text-sm font-bold hover:bg-gray-200">📎 ファイル<input type="file" hidden onChange={(e) => onSelect(e, type)} /></label>
     </div>
   );
 }
