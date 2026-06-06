@@ -230,6 +230,7 @@ export default function MemoCard({
   media={[media]}
   setMedia={() => {}}
   editing={false}
+  onWidthChange={() => {}}
 />
       )
     ))}
@@ -239,6 +240,7 @@ export default function MemoCard({
   media={bottomMedia}
   setMedia={() => {}}
   editing={false}
+  onWidthChange={() => {}}
 />
 )}
     </div>
