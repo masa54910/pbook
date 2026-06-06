@@ -19,10 +19,10 @@ setTypeFilter,
     <aside className="hidden lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:w-[270px] lg:bg-white/55 lg:backdrop-blur-xl lg:border-r lg:border-white/60 lg:shadow-[8px_0_40px_rgba(0,0,0,.04)] lg:p-6 lg:flex lg:flex-col">
       <div className="mb-10 flex justify-center">
         <img
-          src="/pbook-logo.png"
-          alt="P Book"
-          className="w-[190px] h-auto object-contain"
-        />
+  src="/pbook-logo-new.png"
+  alt="P Book"
+  className="w-[220px] h-auto object-contain"
+/>
       </div>
 
       <TagSearch
