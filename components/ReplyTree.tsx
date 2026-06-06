@@ -50,7 +50,12 @@ function ReplyNode({
           {reply.text}
         </div>
 
-        <FixedMediaShelf media={reply.media || []} />
+        <FixedMediaShelf
+  media={reply.media || []}
+  setMedia={() => {}}
+  editing={false}
+  onWidthChange={() => {}}
+/>
 
         <TagList tags={reply.tags} small />
 
