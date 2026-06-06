@@ -146,6 +146,17 @@ function extractTags(input) {
   ).filter(Boolean);
 }
 
+function normalizeTagInput(input) {
+  return Array.from(
+    new Set(
+      String(input || "")
+        .split(/[\s,、，]+/)
+        .map((tag) => tag.replace(/^#+/, "").trim())
+        .filter(Boolean)
+    )
+  );
+}
+
 function mediaToken(media) {
   return `\n[media:${media.id}]\n`;
 }
@@ -742,8 +753,7 @@ function handleNewModeImageFile(e) {
     }
 
 
-    const tags = Array.from(new Set([...extractTags(formTags), ...extractTags(cleanText)]));
-let nextMedia = formMedia;
+   const tags = Array.from(new Set([...normalizeTagInput(formTags), ...extractTags(cleanText)]));
 
 if (modalType === "ホワイトボード") {
   const canvasMedia = getCanvasMedia();
@@ -759,6 +769,20 @@ if (modalType === "ホワイトボード") {
 if (!cleanText && nextMedia.length === 0 && !cleanTitle) {
   alert("内容を入力してください。画像・動画・ファイルだけでも投稿できます。");
   return;
+}
+
+let nextMedia = formMedia;
+
+if (modalType === "ホワイトボード") {
+  const canvasMedia = getCanvasMedia();
+
+  if (canvasMedia) {
+    const otherMedia = formMedia.filter(
+      (m) => !(m.kind === "image" && m.mime === "image/png")
+    );
+
+    nextMedia = [...otherMedia, canvasMedia];
+  }
 }
     const payload = {
   id: editingMemo?.id || uid("memo"),
