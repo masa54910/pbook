@@ -378,9 +378,28 @@ const [modeImageInput, setModeImageInput] = useState("");
   const noteTextRef = useRef(null);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      useEffect(() => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+
+    if (stored) {
+      const parsed = JSON.parse(stored);
+
+      if (Array.isArray(parsed)) {
+        setMemos(
+          parsed.map((memo) => ({
+            ...memo,
+            modeId: memo.modeId || "work",
+            replies: restoreReplyShape(memo.replies || []),
+          }))
+        );
+      }
+    }
+  } catch (error) {
+    console.warn("保存データの読み込みに失敗しました", error);
+  }
+}, []);
+
+useEffect(() => {
   try {
     const storedModes = localStorage.getItem(MODE_STORAGE_KEY);
     const storedSelected = localStorage.getItem(MODE_SELECTED_KEY);
@@ -400,22 +419,6 @@ const [modeImageInput, setModeImageInput] = useState("");
     console.warn("モード復元失敗", error);
   }
 }, []);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          setMemos(
-  parsed.map((memo) => ({
-    ...memo,
-    modeId: memo.modeId || "work",
-    replies: restoreReplyShape(memo.replies || []),
-  }))
-);
-        }
-      }
-    } catch (error) {
-      console.warn("保存データの読み込みに失敗しました", error);
-    }
-  }, []);
 
   useEffect(() => {
     try {
@@ -1042,13 +1045,13 @@ function renderTextWithInlineMedia(memo, editing = false) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
           <button
   onClick={() => setShowModeModal(true)}
-  className="absolute bottom-5 left-5 bg-black/45 backdrop-blur-xl text-white px-5 py-2 rounded-full font-bold hover:bg-black/60 transition"
+  className="absolute bottom-4 left-4 bg-black/45 backdrop-blur-xl text-white px-3 py-1.5 text-sm lg:px-5 lg:py-2 lg:text-base rounded-full font-bold hover:bg-black/60 transition"
 >
   {selectedMode.name}
 </button>
           <button
             onClick={() => setShowCalendar(true)}
-            className="absolute bottom-5 right-5 bg-white/90 backdrop-blur-xl px-5 py-2 rounded-full shadow-md font-bold flex items-center gap-2 hover:bg-white transition"
+            className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-xl px-3 py-1.5 text-sm lg:px-5 lg:py-2 lg:text-base rounded-full shadow-md font-bold flex items-center gap-2 hover:bg-white transition"
           >
             <Icon name="calendarAlt" className="w-4 h-4 text-gray-900" />
             <span>{selectedDate.replaceAll("-", "/")}</span>
@@ -1062,9 +1065,9 @@ function renderTextWithInlineMedia(memo, editing = false) {
               <button
                 key={type}
                 onClick={() => openCreate(type)}
-                className={`flex-1 rounded-2xl py-5 font-bold transition text-white bg-gradient-to-r ${TYPE_STYLE[type].button} shadow-md hover:shadow-lg flex items-center justify-center gap-3`}
+                className={`flex-1 rounded-2xl py-3 lg:py-5 font-bold transition text-white bg-gradient-to-r ${TYPE_STYLE[type].button} shadow-md hover:shadow-lg flex items-center justify-center gap-2 lg:gap-3`}
               >
-                <Icon name={iconName} className="w-7 h-7 lg:w-6 lg:h-6" />
+                <Icon name={iconName} className="w-5 h-5 lg:w-6 lg:h-6" />
                 <span className="hidden lg:inline">＋{type}</span>
               </button>
             );
@@ -1544,7 +1547,7 @@ function renderTextWithInlineMedia(memo, editing = false) {
             setTypeFilter(item.key);
           }
         }}
-        className={`flex flex-col items-center justify-center rounded-2xl px-1 py-2 min-h-[64px] text-[10px] font-bold transition ${
+        className={`flex items-center justify-center rounded-2xl px-1 py-3 min-h-[48px] font-bold transition ${
           typeFilter === item.key
             ? item.key === "ゴミ箱"
               ? "bg-red-50 text-red-600"
@@ -1560,9 +1563,7 @@ function renderTextWithInlineMedia(memo, editing = false) {
           name={item.icon}
           className="mb-1 h-5 w-5"
         />
-        <span className="mt-1 flex h-7 items-center justify-center text-center leading-tight">
-  {item.key}
-</span>
+        
       </button>
     ))}
   </div>
