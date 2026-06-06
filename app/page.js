@@ -353,6 +353,7 @@ export default function Home() {
 const [selectedModeId, setSelectedModeId] = useState("work");
 const [showModeModal, setShowModeModal] = useState(false);
 const [newModeName, setNewModeName] = useState("");
+const [newModeImage, setNewModeImage] = useState("");
 const [editingModeId, setEditingModeId] = useState(null);
 const [editingModeName, setEditingModeName] = useState("");
 const [modeImageInput, setModeImageInput] = useState("");
@@ -523,12 +524,13 @@ function handleAddMode() {
   const newMode = {
     id: uid("mode"),
     name: cleanName,
-    image: selectedMode.image,
+    image: newModeImage || "/pbook-logo.png",
   };
 
   setHomeModes((prev) => [...prev, newMode]);
   setSelectedModeId(newMode.id);
   setNewModeName("");
+  setNewModeImage("");
 }
 
 function startEditMode(mode) {
@@ -616,6 +618,20 @@ function handleModeImageFile(e) {
 
   reader.onload = () => {
     setModeImageInput(String(reader.result || ""));
+  };
+
+  reader.readAsDataURL(file);
+  e.target.value = "";
+}
+
+function handleNewModeImageFile(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    setNewModeImage(String(reader.result || ""));
   };
 
   reader.readAsDataURL(file);
@@ -1148,24 +1164,25 @@ function renderTextWithInlineMedia(memo, editing = false) {
 />
 <div className="flex gap-2">
   <input
-    value={modeImageInput}
-    onClick={(e) => e.stopPropagation()}
-    onChange={(e) => setModeImageInput(e.target.value)}
-    placeholder="画像URL"
-    className="flex-1 rounded-xl px-3 py-2 text-black"
+    value={newModeName}
+    onChange={(e) => setNewModeName(e.target.value)}
+    placeholder="例：読書メモ"
+    className="flex-1 rounded-2xl border border-gray-200 px-4 py-3 outline-none"
   />
 
-  <button
-    type="button"
-    onClick={(e) => {
-      e.stopPropagation();
-      setModeImageInput("");
-    }}
-    className="rounded-xl bg-white/20 px-3 py-2 text-sm font-bold"
-  >
-    クリア
-  </button>
+  
+
+  
 </div>
+
+{newModeImage && (
+  <img
+    src={newModeImage}
+    alt="新規タスク画像プレビュー"
+    className="mt-3 h-24 w-full rounded-2xl object-cover border border-gray-200"
+  />
+)}
+
 
 <div onClick={(e) => e.stopPropagation()}>
   <label className="block cursor-pointer rounded-xl bg-white/20 px-3 py-2 text-sm font-bold text-center">
@@ -1255,19 +1272,37 @@ function renderTextWithInlineMedia(memo, editing = false) {
       <div className="border-t border-gray-100 pt-5">
         <p className="text-sm font-bold text-gray-500 mb-2">新規タスク追加</p>
         <div className="flex gap-2">
-          <input
-  value={newModeName}
-  onChange={(e) => setNewModeName(e.target.value)}
-  placeholder="例：読書メモ"
-  className="flex-1 rounded-2xl border border-gray-200 px-4 py-3 outline-none"
-/>
-          <button
-            onClick={handleAddMode}
-            className="rounded-2xl bg-gray-900 text-white px-5 py-3 font-bold"
-          >
-            追加
-          </button>
-        </div>
+  <input
+    value={newModeName}
+    onChange={(e) => setNewModeName(e.target.value)}
+    placeholder="例：読書メモ"
+    className="flex-1 rounded-2xl border border-gray-200 px-4 py-3 outline-none"
+  />
+
+  <label className="cursor-pointer rounded-2xl bg-gray-100 px-4 py-3 font-bold text-gray-700 hover:bg-gray-200">
+    画像
+    <input
+      type="file"
+      accept="image/*"
+      hidden
+      onChange={handleNewModeImageFile}
+    />
+  </label>
+
+  <button
+    onClick={handleAddMode}
+    className="rounded-2xl bg-gray-900 text-white px-5 py-3 font-bold"
+  >
+    追加
+  </button>
+</div>
+{newModeImage && (
+  <img
+    src={newModeImage}
+    alt="新規タスク画像プレビュー"
+    className="mt-3 h-20 w-full rounded-2xl object-cover border border-gray-200"
+  />
+)}
       </div>
     </div>
   </div>
