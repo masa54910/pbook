@@ -151,7 +151,24 @@ export default function MemoEditor({
         />
 
         {modalType !== "ノート" && (
-          <div className="flex justify-end gap-3 mt-8">
+  <div className="relative z-50 flex justify-end gap-3 mt-8">
+    <button
+      type="button"
+      onClick={closeModal}
+      className="relative z-50 px-6 py-3 rounded-full bg-gray-100 font-bold"
+    >
+      キャンセル
+    </button>
+
+    <button
+      type="button"
+      onClick={submitMemo}
+      className={`relative z-50 px-7 py-3 rounded-full text-white font-bold bg-gradient-to-r ${TYPE_STYLE[modalType].button}`}
+    >
+      {editingMemo ? "更新する" : "投稿する"}
+    </button>
+  </div>
+)}
             <button
               onClick={closeModal}
               className="px-6 py-3 rounded-full bg-gray-100 font-bold"

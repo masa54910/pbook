@@ -753,23 +753,9 @@ function handleNewModeImageFile(e) {
     }
 
 
-   const tags = Array.from(new Set([...normalizeTagInput(formTags), ...extractTags(cleanText)]));
-
-if (modalType === "ホワイトボード") {
-  const canvasMedia = getCanvasMedia();
-
-  if (canvasMedia) {
-    const otherMedia = formMedia.filter(
-      (m) => !(m.kind === "image" && m.mime === "image/png")
-    );
-
-    nextMedia = [...otherMedia, canvasMedia];
-  }
-}
-if (!cleanText && nextMedia.length === 0 && !cleanTitle) {
-  alert("内容を入力してください。画像・動画・ファイルだけでも投稿できます。");
-  return;
-}
+   const tags = Array.from(
+  new Set([...normalizeTagInput(formTags), ...extractTags(cleanText)])
+);
 
 let nextMedia = formMedia;
 
@@ -783,6 +769,11 @@ if (modalType === "ホワイトボード") {
 
     nextMedia = [...otherMedia, canvasMedia];
   }
+}
+
+if (!cleanText && nextMedia.length === 0 && !cleanTitle) {
+  alert("内容を入力してください。画像・動画・ファイルだけでも投稿できます。");
+  return;
 }
     const payload = {
   id: editingMemo?.id || uid("memo"),
