@@ -163,28 +163,14 @@ export default function MemoEditor({
     <button
       type="button"
       onClick={submitMemo}
-      className={`relative z-50 px-7 py-3 rounded-full text-white font-bold bg-gradient-to-r ${TYPE_STYLE[modalType].button}`}
+      className={`relative z-50 px-7 py-3 rounded-full text-white font-bold bg-gradient-to-r ${typeStyle[modalType].button}`}
     >
       {editingMemo ? "更新する" : "投稿する"}
     </button>
   </div>
 )}
-            <button
-              onClick={closeModal}
-              className="px-6 py-3 rounded-full bg-gray-100 font-bold"
-            >
-              キャンセル
-            </button>
-
-            <button
-              onClick={submitMemo}
-              className={`px-7 py-3 rounded-full text-white font-bold bg-gradient-to-r ${typeStyle[modalType].button}`}
-            >
-              {editingMemo ? "更新する" : "投稿する"}
-            </button>
-          </div>
-        )}
       </div>
     </div>
-  );
+  
+);
 }
