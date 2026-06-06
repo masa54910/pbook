@@ -1150,11 +1150,13 @@ if (!isMounted) return null;
   <h3 className="text-2xl font-bold">タスク切替</h3>
 
   <button
-    onClick={closeModal}
-    className="text-2xl text-gray-400 hover:text-gray-700 shrink-0"
-  >
-    ×
-  </button>
+  type="button"
+  onClick={() => setShowModeModal(false)}
+  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-100 text-3xl leading-none text-gray-500 hover:bg-gray-200 hover:text-gray-800 active:scale-95"
+  aria-label="タスク切替を閉じる"
+>
+  ✖
+</button>
 </div>
 
       <div className="space-y-3 mb-5">
@@ -1413,21 +1415,21 @@ if (!isMounted) return null;
 
   
 <div className="mt-5 rounded-2xl border border-gray-200 bg-white p-4">
-  <div className="mb-3 flex items-center gap-3">
-    <label className="text-sm font-bold text-gray-500">
-      色
-    </label>
+  <div className="mb-3 flex items-center gap-2 overflow-x-auto pb-2">
+    <label className="hidden">
+  色
+</label>
 
     <input
       type="color"
       value={drawColor}
       onChange={(e) => setDrawColor(e.target.value)}
-      className="h-9 w-12 cursor-pointer"
+      className="h-11 w-11 shrink-0 cursor-pointer rounded-xl"
     />
 
-    <label className="text-sm font-bold text-gray-500">
-      太さ
-    </label>
+    <label className="hidden">
+  太さ
+</label>
 
     <select
       value={drawWidth}
@@ -1442,19 +1444,19 @@ if (!isMounted) return null;
 <button
   type="button"
   onClick={undoCanvas}
-  className="rounded-full bg-gray-100 px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-200"
+  className="rounded-xl bg-gray-100 px-3 py-3 text-sm font-bold text-gray-600 hover:bg-gray-200"
 >
-  ↩ 
+  ↩
 </button>
 
 <button
   type="button"
   onClick={() => setIsEraser((prev) => !prev)}
-  className={`shrink-0 rounded-full px-3 py-2 text-xs lg:text-sm font-bold ${
-  isEraser
-    ? "bg-red-100 text-red-600"
-    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-}`}
+  className={`rounded-xl px-3 py-3 text-sm font-bold ${
+    isEraser
+      ? "bg-red-100 text-red-600"
+      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+  }`}
 >
   🧽
 </button>
@@ -1475,12 +1477,14 @@ if (!isMounted) return null;
   </>
 )}
     <button
-      type="button"
-      onClick={clearCanvas}
-      className="shrink-0 whitespace-nowrap rounded-full bg-gray-100 px-3 py-2 text-xs font-bold text-gray-600 hover:bg-gray-200"
-    >
-      クリア
-    </button>
+  type="button"
+  onClick={clearCanvas}
+  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-xl font-bold text-gray-600 hover:bg-gray-200"
+  aria-label="ホワイトボードをクリア"
+  title="クリア"
+>
+  🗑
+</button>
   </div>
 
   <canvas
@@ -1503,7 +1507,18 @@ if (!isMounted) return null;
     e.preventDefault();
     stopDrawing();
   }}
-  className="h-[300px] w-full touch-none cursor-crosshair rounded-xl border border-dashed border-gray-300 bg-white lg:h-auto"
+  className="
+w-full
+h-[420px]
+sm:h-[520px]
+touch-none
+rounded-2xl
+border
+border-gray-300
+bg-white
+shadow-inner
+select-none
+"
 />
 </div>
   <div className="mt-4">
