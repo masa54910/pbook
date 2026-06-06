@@ -160,18 +160,20 @@ export default function MemoCard({
         </div>
       )}
 
-      <h3
-        onClick={() =>
-          isNote && setNoteExpanded((prev) => !prev)
-        }
-        className={`text-3xl font-bold mb-4 ${
-          isNote
-            ? "cursor-pointer hover:text-green-700 transition"
-            : ""
-        }`}
-      >
-        {memo.title}
-      </h3>
+      {memo.type !== "つぶやき" && memo.title && (
+  <h3
+    onClick={() =>
+      isNote && setNoteExpanded((prev) => !prev)
+    }
+    className={`text-3xl font-bold mb-4 ${
+      isNote
+        ? "cursor-pointer hover:text-green-700 transition"
+        : ""
+    }`}
+  >
+    {memo.title}
+  </h3>
+)}
 
       <div
         onClick={() =>
