@@ -1,0 +1,21 @@
+﻿{
+  "name": "P-Book",
+  "short_name": "P-Book",
+  "description": "プライベートなメモ書きフォーム",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f2ef",
+  "theme_color": "#f472b6",
+  "icons": [
+    {
+      "src": "/pbook-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/pbook-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
