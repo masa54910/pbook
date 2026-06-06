@@ -1332,8 +1332,11 @@ if (!isMounted) return null;
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-6">
           <div className="w-[92vw] max-w-3xl max-h-[86vh] overflow-y-auto bg-white/95 rounded-[28px] shadow-2xl p-5 lg:p-8">
             <div className="flex items-start justify-between mb-6 gap-3">
-  <h3 className="text-[42px] sm:text-2xl font-bold leading-none break-words">
-  {editingMemo ? "編集" : "新規作成"}：{modalType}
+  <h3 className="text-[28px] leading-tight font-bold lg:text-3xl">
+  {editingMemo ? "編集" : "新規作成"}：
+  <span className="inline-block whitespace-nowrap">
+    {modalType}
+  </span>
 </h3>
 
 {modalType === "ノート" ? (
