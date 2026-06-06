@@ -46,7 +46,7 @@ const NAV_ITEMS = [
   { key: "ゴミ箱", icon: "trash" },
 ];
 
-const today = "2026-05-30";
+const today = new Date().toISOString().slice(0, 10);
 
 const initialMemos = [
   {
@@ -451,7 +451,7 @@ const [modeImageInput, setModeImageInput] = useState("");
       .map(([tag, count]) => ({ tag, count }));
   }, [memos]);
 
-  const calendarInfo = useMemo(() => {
+    const calendarInfo = useMemo(() => {
     const [yearText, monthText] = selectedDate.split("-");
     const year = Number(yearText);
     const monthIndex = Number(monthText) - 1;
@@ -473,6 +473,15 @@ const [modeImageInput, setModeImageInput] = useState("");
 
     return { year, month: monthIndex + 1, cells };
   }, [selectedDate]);
+  function moveMonth(diff) {
+  const [yearText, monthText] = selectedDate.split("-");
+  const current = new Date(Number(yearText), Number(monthText) - 1 + diff, 1);
+
+  const y = current.getFullYear();
+  const m = String(current.getMonth() + 1).padStart(2, "0");
+
+  setSelectedDate(`${y}-${m}-01`);
+}
 
   const visibleMemos = useMemo(() => {
     const q = search.trim().replace(/^#/, "").toLowerCase();
@@ -1121,6 +1130,7 @@ function renderTextWithInlineMedia(memo, editing = false) {
   selectedDate={selectedDate}
   getMemoCount={getMemoCount}
   setSelectedDate={setSelectedDate}
+  moveMonth={moveMonth}
   Icon={Icon}
 />
 

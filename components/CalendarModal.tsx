@@ -7,6 +7,7 @@ export default function CalendarModal({
   selectedDate,
   getMemoCount,
   setSelectedDate,
+  moveMonth,
   Icon,
 }) {
   if (!show) return null;
@@ -27,6 +28,23 @@ export default function CalendarModal({
               <h3 className="text-2xl font-bold">
                 {calendarInfo.year}年{calendarInfo.month}月
               </h3>
+              <div className="mt-3 flex gap-2">
+  <button
+    type="button"
+    onClick={() => moveMonth(-1)}
+    className="rounded-full bg-gray-100 px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-200"
+  >
+    ← 前月
+  </button>
+
+  <button
+    type="button"
+    onClick={() => moveMonth(1)}
+    className="rounded-full bg-gray-100 px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-200"
+  >
+    次月 →
+  </button>
+</div>
             </div>
           </div>
 
