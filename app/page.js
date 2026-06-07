@@ -436,10 +436,21 @@ useEffect(() => {
   useEffect(() => {
     try {
       const lightMemos = memos.map((memo) => ({
-        ...memo,
-        media: (memo.media || []).map((m) => ({ ...m, url: "" })),
-        replies: stripMediaUrlsFromReplies(memo.replies || []),
-      }));
+  ...memo,
+  media: (memo.media || []).map((m) => {
+    const isWhiteboardImage =
+      memo.type === "ホワイトボード" &&
+      m.kind === "image" &&
+      m.mime === "image/png" &&
+      String(m.url || "").startsWith("data:image/png");
+
+    return {
+      ...m,
+      url: isWhiteboardImage ? m.url : "",
+    };
+  }),
+  replies: stripMediaUrlsFromReplies(memo.replies || []),
+}));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(lightMemos));
     } catch (error) {
       console.warn("localStorage保存に失敗しました。画像・動画は一時表示扱いです。", error);
@@ -535,7 +546,12 @@ useEffect(() => {
 }, [memos, selectedDate, search, selectedModeId, typeFilter]);
 
   const getMemoCount = (date) =>
-  memos.filter((memo) => memo.modeId === selectedModeId && memo.date === date).length;
+  memos.filter(
+    (memo) =>
+      memo.modeId === selectedModeId &&
+      memo.date === date &&
+      memo.deleted !== true
+  ).length;
 const selectedMode = homeModes.find((mode) => mode.id === selectedModeId) || homeModes[0];
 
 function handleAddMode() {
